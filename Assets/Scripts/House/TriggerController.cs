@@ -23,6 +23,16 @@ public class TriggerController : MonoBehaviour
             if (interactionController != null) interactionController.SetActiveTrigger(index);
         }
     }
+    void OnTriggerStay(Collider other)
+    {
+        // Проверяем, что в триггер вошел игрок
+        if (other.CompareTag("Player"))
+        {
+            // Устанавливаем флаг
+            playerController.SetPlayerInside(true);
+            if (interactionController != null) interactionController.SetActiveTrigger(index);
+        }
+    }
     void OnTriggerExit(Collider other)
     {
         // Проверяем, что в триггер вошел игрок
@@ -30,6 +40,10 @@ public class TriggerController : MonoBehaviour
         {
             // Устанавливаем флаг
             playerController.SetPlayerInside(false);
+            if (interactionController != null && interactionController.IsCurrentTrigger(index))
+            {
+                interactionController.SetActiveTrigger(-1);
+            }
         }
     }
 }

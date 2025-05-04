@@ -5,6 +5,16 @@ public class PlayerController : MonoBehaviour
     private Animator animator;
     private bool canMove = true;
     private bool playerInsideOfTrigger = false;
+    private bool isPositionLocked = false;
+
+    public void LockPosition(bool state)
+    {
+        isPositionLocked = state;
+    }
+    public bool IsPositionLocked()
+    {
+        return isPositionLocked;
+    }
 
     private void Awake()
     {
@@ -30,5 +40,8 @@ public class PlayerController : MonoBehaviour
     {
         transform.localPosition = trans.position; // учитываем локальную позицию
         transform.rotation = trans.rotation;
+        BasicBehaviour basic = gameObject.GetComponent<BasicBehaviour>();
+        basic.ClearLastDirection();
     }
+
 }

@@ -14,16 +14,15 @@ public class DialogueController : MonoBehaviour
     private Story story;
     private bool skipRequested;
     private bool isDialoguePlaying;
+    public bool IsDialoguePlaying => isDialoguePlaying;
     private GameLogic gameLogic;
 
-    private Color girlColor;
-    private Color othersColor;
+    public Color girlColor = new Color32(0xCD, 0x19, 0x19, 0xFF);
+    public Color othersColor = Color.white;
     private Button[] choiceButtons;
 
     void Start()
     {
-        girlColor = new Color32(0xCD, 0x19, 0x19, 0xFF);
-        othersColor = Color.white;
         choiceButtons = choiceButtonsParent.GetComponentsInChildren<Button>();
 
         gameLogic = FindAnyObjectByType<GameLogic>();
@@ -36,7 +35,6 @@ public class DialogueController : MonoBehaviour
         }
 
         story = new Story(inkFile.text);
-        PlayKnot("main");
     }
     public void EndGame(int dialogueIndex)
     {
@@ -49,8 +47,13 @@ public class DialogueController : MonoBehaviour
         }
     }
 
-    public void PlayKnot(string knotName)
+    public void PlayPartOfPlot(string knotName)
     {
+        StartCoroutine(PlayKnot(knotName));
+    }
+    private IEnumerator PlayKnot(string knotName)
+    {
+        isDialoguePlaying = true;
         if (story == null)
             story = new Story(inkFile.text);
 
@@ -61,10 +64,10 @@ public class DialogueController : MonoBehaviour
         catch
         {
             Debug.LogWarning($"Нет узла: {knotName}");
-            return;
+            yield break;
         }
 
-        StopAllCoroutines();
+        //StopAllCoroutines();
         StartCoroutine(PlayMonologue());
     }
 
@@ -151,7 +154,9 @@ public class DialogueController : MonoBehaviour
 
     private IEnumerator ShowChoiceThenContinue()
     {
-        yield return new WaitForSeconds(1.5f);
+        skipRequested = false;
+        yield return WaitOrSkip(3f); // <- теперь можно кликнуть и прервать ожидание
+
         text.color = othersColor;
         StartCoroutine(PlayMonologue());
     }

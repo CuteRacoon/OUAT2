@@ -67,7 +67,14 @@ public class BasicBehaviour : MonoBehaviour
         groundedBool = Animator.StringToHash("Grounded");
         colExtents = GetComponent<Collider>().bounds.extents;
     }
-
+    public PlayerController GetPlayerController()
+    {
+        return GetComponent<PlayerController>();
+    }
+    public void ClearLastDirection()
+    {
+        lastDirection = Vector3.zero;
+    }
     void Update()
     {
         if (behaviourLocked != 0)
