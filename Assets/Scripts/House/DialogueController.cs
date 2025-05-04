@@ -6,12 +6,17 @@ using Ink.Runtime;
 
 public class DialogueController : MonoBehaviour
 {
-    [SerializeField] private Text text;
-    [SerializeField] private GameObject textThing;
+    
+    [SerializeField] private GameObject textPanel;
+    [SerializeField] private GameObject learningPanel;
     [SerializeField] private TextAsset inkFile;
     [SerializeField] private GameObject choiceButtonsParent;
 
+    HashSet<string> noDashTags = new HashSet<string> { "othersLine", "learningPhrase" };
+
     private Story story;
+    private Text text;
+    private Text learningText;
     private bool skipRequested;
     private bool isDialoguePlaying;
     public bool IsDialoguePlaying => isDialoguePlaying;
@@ -20,14 +25,21 @@ public class DialogueController : MonoBehaviour
     public Color girlColor = new Color32(0xCD, 0x19, 0x19, 0xFF);
     public Color othersColor = Color.white;
     private Button[] choiceButtons;
+    private float delay;
+    private Coroutine dialogueCoroutine;
 
     void Start()
     {
         choiceButtons = choiceButtonsParent.GetComponentsInChildren<Button>();
-
         gameLogic = FindAnyObjectByType<GameLogic>();
-        text.text = "";
-        textThing.SetActive(false);
+
+        text = textPanel.GetComponentInChildren<Text>();
+        textPanel.SetActive(false);
+
+        learningText = learningPanel.GetComponentInChildren<Text>();
+        learningPanel.SetActive(false);
+
+        text.text = learningText.text = "";
 
         foreach (var button in choiceButtons)
         {
@@ -36,10 +48,24 @@ public class DialogueController : MonoBehaviour
 
         story = new Story(inkFile.text);
     }
-    public void EndGame(int dialogueIndex)
+    public void LearningPanelText(string text)
+    {
+        learningText.text = text;
+        learningPanel.SetActive(true);
+    }
+    public void HideAllPanels()
+    {
+        textPanel.SetActive(false);
+        learningPanel.SetActive(false);
+    }
+    public IEnumerator EndGame(int dialogueIndex)
     {
         string knotName = $"end_{dialogueIndex}";
-        PlayKnot(knotName);
+        dialogueCoroutine = StartCoroutine(PlayKnot(knotName, false));
+        yield return dialogueCoroutine;
+
+        while (isDialoguePlaying)
+            yield return null;
 
         if (dialogueIndex != 3)
         {
@@ -49,10 +75,28 @@ public class DialogueController : MonoBehaviour
 
     public void PlayPartOfPlot(string knotName)
     {
-        StartCoroutine(PlayKnot(knotName));
+        dialogueCoroutine = StartCoroutine(PlayKnot(knotName, false));
     }
-    private IEnumerator PlayKnot(string knotName)
+    public void StopDialogue()
     {
+        if (dialogueCoroutine != null)
+        {
+            StopCoroutine(dialogueCoroutine);
+            dialogueCoroutine = null;
+            skipRequested = true;
+            Debug.Log("Останавливаю корутину");
+        }
+        else Debug.Log("Корутина и так нулевая");
+
+        isDialoguePlaying = false;
+        HideAllPanels();
+    }
+    private IEnumerator PlayKnot(string knotName, bool isDelayNeeded)
+    {
+        if (isDelayNeeded)
+        {
+            yield return new WaitForSeconds(delay);
+        }
         isDialoguePlaying = true;
         if (story == null)
             story = new Story(inkFile.text);
@@ -68,14 +112,19 @@ public class DialogueController : MonoBehaviour
         }
 
         //StopAllCoroutines();
-        StartCoroutine(PlayMonologue());
+        dialogueCoroutine = StartCoroutine(PlayMonologue());
+    }
+    public void PlayPartOfPlotWithDelay(string knotName, float neededDelay)
+    {
+        delay = neededDelay;
+        dialogueCoroutine = StartCoroutine(PlayKnot(knotName, true));
     }
 
     private IEnumerator PlayMonologue()
     {
         isDialoguePlaying = true;
-        textThing.SetActive(true);
         text.text = "";
+        learningText.text = "";
 
         while (story.canContinue || story.currentChoices.Count > 0)
         {
@@ -84,25 +133,37 @@ public class DialogueController : MonoBehaviour
             {
                 text.color = girlColor;
                 string line = story.Continue().Trim();
-                string endLine = "- " + line;
                 float delay = 3f;
+                bool isLearning = false;
+                bool shouldAddDash = true;
 
-                // обработка тега wait:1.5
                 if (story.currentTags != null)
                 {
                     foreach (string tag in story.currentTags)
                     {
                         if (tag.StartsWith("wait:") && float.TryParse(tag.Substring(5), out float parsedDelay))
                             delay = parsedDelay;
-                        if (tag == "othersLine")
-                        {
+                        else if (tag == "othersLine")
                             text.color = othersColor;
-                            endLine = line;
-                        }
+                        else if (tag == "learningPhrase")
+                            isLearning = true;
+
+                        if (noDashTags.Contains(tag))
+                            shouldAddDash = false;
                     }
                 }
+                string endLine = shouldAddDash ? "- " + line : line;
 
-                text.text = endLine;
+                if (isLearning)
+                {
+                    learningPanel.SetActive(true);
+                    learningText.text = endLine;
+                }
+                else
+                {
+                    textPanel.SetActive(true);
+                    text.text = endLine;
+                }
                 yield return WaitOrSkip(delay);
             } 
 
@@ -115,7 +176,8 @@ public class DialogueController : MonoBehaviour
         }
 
         yield return new WaitForSeconds(0.5f);
-        textThing.SetActive(false);
+        textPanel.SetActive(false);
+        learningPanel.SetActive(false);
         isDialoguePlaying = false;
     }
 
@@ -158,7 +220,7 @@ public class DialogueController : MonoBehaviour
         yield return WaitOrSkip(3f); // <- теперь можно кликнуть и прервать ожидание
 
         text.color = othersColor;
-        StartCoroutine(PlayMonologue());
+        dialogueCoroutine = StartCoroutine(PlayMonologue());
     }
 
     private IEnumerator WaitOrSkip(float duration)

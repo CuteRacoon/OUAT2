@@ -8,19 +8,25 @@ public class InteractionController : MonoBehaviour
 
     private CameraBehaviour cameraBehaviour;
     private PlayerController playerController;
+    private DialogueController dialogueController;
+    private TriggerController[] triggerControllers;
+
     private Transform[] stayingGirls;
     private GameObject[] hintPanels;
-    private TriggerController[] triggerControllers;
 
     private Vector2[] defaultPanelPositions; // позиции по умолчанию
     private Vector2[] activePanelPositions;  // позиции при активной камере
 
-    private int cameraAndTriggerIndex = 3;
+    private int cameraAndTriggerIndex = -1;
     private int activeIndex = -1;
+    public int windowDialogueIndex = 0;
 
-    private bool playerInside = false;
+    public bool playerInside = false;
     private bool somethingChanging = false;
     private bool inProcess = false;
+
+    private bool learningCompleted = false;
+    private bool showingLearningPanel = false;
 
     void Start()
     {
@@ -46,6 +52,7 @@ public class InteractionController : MonoBehaviour
 
         cameraBehaviour = FindAnyObjectByType<CameraBehaviour>();
         playerController = FindAnyObjectByType<PlayerController>();
+        dialogueController = FindAnyObjectByType<DialogueController>();
         triggerControllers = FindObjectsByType<TriggerController>(FindObjectsSortMode.None)
             .OrderBy(tc => tc.index)
             .ToArray();
@@ -66,17 +73,28 @@ public class InteractionController : MonoBehaviour
             Debug.LogWarning("Индекс триггера вне диапазона: " + index);
         }
     }
+    public void TurnStateHintPanels(bool state)
+    {
+        hintPanels[activeIndex].SetActive(state);
+        activeIndex = -1;
+    }
 
     public void SetActiveTrigger(int index)
     {
         if (index <= 0)
         {
+            if (showingLearningPanel && !learningCompleted)
+            {
+                showingLearningPanel = false;
+                dialogueController.HideAllPanels(); // скрыть панель при выходе
+            }
             if (inProcess)
+            {
                 ResetInteraction();
-
+            }    
             if (activeIndex >= 0 && hintPanels[activeIndex] != null)
                 hintPanels[activeIndex].SetActive(false);
-
+            
             activeIndex = -1;
             somethingChanging = false;
             return;
@@ -89,12 +107,19 @@ public class InteractionController : MonoBehaviour
 
         activeIndex = index - 1;
         cameraAndTriggerIndex = index;
+
         somethingChanging = true;
 
         if (activeIndex >= 0 && activeIndex < hintPanels.Length)
         {
             hintPanels[activeIndex].SetActive(true);
             hintPanels[activeIndex].GetComponent<RectTransform>().anchoredPosition = defaultPanelPositions[activeIndex];
+            if (!learningCompleted)
+            {
+                dialogueController.LearningPanelText("Нажмите Е для взаимодействия");
+                showingLearningPanel = true;
+            }
+
         }
     }
     public bool IsCurrentTrigger(int index)
@@ -116,8 +141,6 @@ public class InteractionController : MonoBehaviour
 
             if (!playerInside)
             {
-                /*if (inProcess)
-                    ResetInteraction();*/
                 hintPanels[activeIndex].SetActive(false);
                 SetActiveTrigger(-1);
                 return;
@@ -133,6 +156,10 @@ public class InteractionController : MonoBehaviour
                 else
                 {
                     ResetInteraction();
+                    if (cameraAndTriggerIndex == 2 && windowDialogueIndex > 0)
+                    {
+                        dialogueController.StopDialogue();
+                    }
                 }
             }
         }
@@ -140,6 +167,12 @@ public class InteractionController : MonoBehaviour
 
     private void ActivateInteraction()
     {
+        if (showingLearningPanel && !learningCompleted)
+        {
+            showingLearningPanel = false;
+            learningCompleted = true;
+            dialogueController.HideAllPanels();
+        }
         cameraBehaviour.SwitchCamera(cameraAndTriggerIndex); // Камера сдвигается с учётом смещения индекса
         if (activeIndex < stayingGirls.Length)
         {
@@ -153,6 +186,21 @@ public class InteractionController : MonoBehaviour
 
         playerController.SetMovement(false);
         inProcess = true;
+        if (cameraAndTriggerIndex == 2)
+        {
+            switch (windowDialogueIndex)
+            {
+                case 0:
+                    break;
+                case 1:
+                    dialogueController.PlayPartOfPlotWithDelay("window_dialogue_1", 3f);
+                    break;
+                case 2:
+                    dialogueController.PlayPartOfPlotWithDelay("window_dialogue_2", 3f);
+                    break;
+            }
+            windowDialogueIndex++;
+        }
     }
     public void SetPlayerPosition(int index)
     {

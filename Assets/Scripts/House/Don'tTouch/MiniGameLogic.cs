@@ -91,9 +91,10 @@ public class GameLogic : MonoBehaviour
         List<KeyValuePair<int, int>> expectedObjects = new List<KeyValuePair<int, int>>()
         {
             new KeyValuePair<int, int>(0, 1),
-            new KeyValuePair<int, int>(1, 1),
+            new KeyValuePair<int, int>(1, 2),
+            new KeyValuePair<int, int>(1, 3),
             new KeyValuePair<int, int>(2, 1),
-            new KeyValuePair<int, int>(2, 3)
+            new KeyValuePair<int, int>(2, 2)
         };
 
         SortList(CollectedObjects);
@@ -103,17 +104,17 @@ public class GameLogic : MonoBehaviour
         int differences = CountDifferences(CollectedObjects, expectedObjects);
         if (differences > 0 && differences <= 2)
         {
-            dialogueController.EndGame(1);
+            StartCoroutine(dialogueController.EndGame(1));
             animationsControl.ObjectsOn(2, 4);
         }
         else if (differences > 2)
         {
-            dialogueController.EndGame(2);
+            StartCoroutine(dialogueController.EndGame(2));
             animationsControl.ObjectsOn(3, 4);
         }
         else if (differences == 0 && CollectedObjects.Count == expectedObjects.Count)
         {
-            dialogueController.EndGame(3);
+            StartCoroutine(dialogueController.EndGame(3));
             animationsControl.ObjectsOn(4, 4);
         }
     }
@@ -160,9 +161,9 @@ public class GameLogic : MonoBehaviour
             isGameOver = false;
             return false;
         }
-        if (CollectedObjects.Count > 3)
+        if (CollectedObjects.Count > 4)
         {
-            Debug.Log("Ингредиентов 3 штуки");
+            Debug.Log("Ингредиентов 4 штуки");
             return true;
         }
         return false;
