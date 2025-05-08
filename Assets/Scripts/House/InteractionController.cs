@@ -1,5 +1,8 @@
 using System.Linq;
 using UnityEngine;
+using System.Collections;
+using UnityEngine.Experimental.Rendering;
+using Unity.VisualScripting;
 
 public class InteractionController : MonoBehaviour
 {
@@ -19,7 +22,8 @@ public class InteractionController : MonoBehaviour
 
     private int cameraAndTriggerIndex = -1;
     private int activeIndex = -1;
-    public int windowDialogueIndex = 0;
+    private int windowDialogueIndex = 0;
+    private int recipeDialogueIndex = 0;
 
     public bool playerInside = false;
     private bool somethingChanging = false;
@@ -27,6 +31,8 @@ public class InteractionController : MonoBehaviour
 
     private bool learningCompleted = false;
     private bool showingLearningPanel = false;
+    public bool recipeChecked = false;
+    private Coroutine windowDialogueCoroutine;
 
     void Start()
     {
@@ -38,7 +44,7 @@ public class InteractionController : MonoBehaviour
 
         // Исключаем сам stayingGirlsObj из массива
         stayingGirls = new Transform[stayingGirlsObj.transform.childCount];
-        for (int i = 0; i < stayingGirls.Length; i++)
+        for (int i = 0; i < hintPanels.Length; i++)
         {
             stayingGirls[i] = stayingGirlsObj.transform.GetChild(i);
             RectTransform rt = hintPanels[i].GetComponent<RectTransform>();
@@ -48,7 +54,6 @@ public class InteractionController : MonoBehaviour
 
         activePanelPositions[0] = new Vector2(850, 230);
         activePanelPositions[1] = new Vector2(-700, -230);
-        activePanelPositions[2] = new Vector2(700, -70); // добавь, если нужно
 
         cameraBehaviour = FindAnyObjectByType<CameraBehaviour>();
         playerController = FindAnyObjectByType<PlayerController>();
@@ -73,11 +78,6 @@ public class InteractionController : MonoBehaviour
             Debug.LogWarning("Индекс триггера вне диапазона: " + index);
         }
     }
-    public void TurnStateHintPanels(bool state)
-    {
-        hintPanels[activeIndex].SetActive(state);
-        activeIndex = -1;
-    }
 
     public void SetActiveTrigger(int index)
     {
@@ -91,10 +91,10 @@ public class InteractionController : MonoBehaviour
             if (inProcess)
             {
                 ResetInteraction();
-            }    
+            }
             if (activeIndex >= 0 && hintPanels[activeIndex] != null)
                 hintPanels[activeIndex].SetActive(false);
-            
+
             activeIndex = -1;
             somethingChanging = false;
             return;
@@ -119,7 +119,6 @@ public class InteractionController : MonoBehaviour
                 dialogueController.LearningPanelText("Нажмите Е для взаимодействия");
                 showingLearningPanel = true;
             }
-
         }
     }
     public bool IsCurrentTrigger(int index)
@@ -142,6 +141,8 @@ public class InteractionController : MonoBehaviour
             if (!playerInside)
             {
                 hintPanels[activeIndex].SetActive(false);
+                dialogueController.HideAllPanels();
+                showingLearningPanel = false;
                 SetActiveTrigger(-1);
                 return;
             }
@@ -150,16 +151,19 @@ public class InteractionController : MonoBehaviour
             {
                 if (!inProcess)
                 {
-                    MoveHintPanel();
+                    hintPanels[activeIndex].SetActive(false);
+                    if (showingLearningPanel)
+                    {
+                        dialogueController.HideAllPanels();
+                        showingLearningPanel = false;
+                    }
                     ActivateInteraction();
                 }
                 else
                 {
                     ResetInteraction();
-                    if (cameraAndTriggerIndex == 2 && windowDialogueIndex > 0)
-                    {
-                        dialogueController.StopDialogue();
-                    }
+                    hintPanels[activeIndex].SetActive(true);
+                    dialogueController.StopDialogue();
                 }
             }
         }
@@ -167,14 +171,13 @@ public class InteractionController : MonoBehaviour
 
     private void ActivateInteraction()
     {
-        if (showingLearningPanel && !learningCompleted)
+        if (!learningCompleted)
         {
-            showingLearningPanel = false;
             learningCompleted = true;
-            dialogueController.HideAllPanels();
+            StartCoroutine(StartExitCoroutine("Нажмите Е, чтобы вернуться в дом"));
         }
         cameraBehaviour.SwitchCamera(cameraAndTriggerIndex); // Камера сдвигается с учётом смещения индекса
-        if (activeIndex < stayingGirls.Length)
+        if (activeIndex < hintPanels.Length)
         {
             playerController.SetTransform(stayingGirls[activeIndex]);
             playerController.LockPosition(true);
@@ -186,38 +189,106 @@ public class InteractionController : MonoBehaviour
 
         playerController.SetMovement(false);
         inProcess = true;
+        if (cameraAndTriggerIndex == 1 && !recipeChecked)
+        {
+            dialogueController.PlayPartOfPlot($"recipe_hint_{recipeDialogueIndex + 2}");
+            dialogueController.BlockSkippingForOneKnot();
+
+            if (recipeDialogueIndex > 1) recipeDialogueIndex = 0;
+            else recipeDialogueIndex++;
+
+        }
         if (cameraAndTriggerIndex == 2)
         {
-            switch (windowDialogueIndex)
+            if (windowDialogueCoroutine != null)
             {
-                case 0:
-                    break;
-                case 1:
-                    dialogueController.PlayPartOfPlotWithDelay("window_dialogue_1", 3f);
-                    break;
-                case 2:
-                    dialogueController.PlayPartOfPlotWithDelay("window_dialogue_2", 3f);
-                    break;
+                StopCoroutine(windowDialogueCoroutine);
             }
-            windowDialogueIndex++;
+            windowDialogueCoroutine = StartCoroutine(HandleWindowInteraction());
         }
     }
+    private IEnumerator StartExitCoroutine(string text)
+    {
+        dialogueController.HideAllPanels();
+        yield return new WaitForSeconds(0.5f);
+
+        // Показываем панель обучения
+        dialogueController.LearningPanelText(text);
+        bool clicked = false;
+
+        while (!clicked)
+        {
+            if (Input.GetKeyDown(KeyCode.E)) clicked = true;
+            yield return null;
+        }
+        if (showingLearningPanel)
+        {
+            dialogueController.HideAllPanels();
+            showingLearningPanel = false;
+        }
+    }
+    private IEnumerator HandleWindowInteraction()
+    {
+        if (windowDialogueIndex == 0)
+        {
+            recipeChecked = true;
+            windowDialogueIndex = 1;
+            yield break;
+        }
+
+        string dialogueKey = $"window_dialogue_{windowDialogueIndex}";
+        Debug.Log("Запускаю диалог" + windowDialogueIndex);
+        if (dialogueKey == null)
+        {
+            windowDialogueCoroutine = null;
+            yield break;
+        }
+
+        float delay = 4f;
+        dialogueController.PlayPartOfPlotWithDelay(dialogueKey, delay);
+
+        yield return new WaitForSeconds(delay);
+
+        bool started = false;
+        yield return new WaitUntil(() =>
+        {
+            if (dialogueController.IsDialoguePlaying)
+            {
+                started = true;
+                return true;
+            }
+            // если игрок вышел до начала — выходим
+            return !inProcess;
+        });
+
+        if (!started)
+        {
+            // диалог не начался — не увеличиваем индекс
+            windowDialogueCoroutine = null;
+            yield break;
+        }
+        // Блокируем пропуск, ждём завершения диалога
+        dialogueController.BlockSkippingForOneKnot();
+        // Ждём, пока он закончится или взаимодействие не будет сброшено
+        yield return new WaitUntil(() => !dialogueController.IsDialoguePlaying || !inProcess);
+        windowDialogueIndex++;
+        windowDialogueCoroutine = null;
+    }
+
     public void SetPlayerPosition(int index)
     {
         playerController.SetMovement(false);
         playerController.SetTransform(stayingGirls[index]);
         playerController.LockPosition(true);
     }
-    private void MoveHintPanel()
-    {
-        if (activeIndex >= 0 && activeIndex < hintPanels.Length)
-        {
-            hintPanels[activeIndex].GetComponent<RectTransform>().anchoredPosition = activePanelPositions[activeIndex];
-        }
-    }
 
     public void ResetInteraction()
     {
+        if (showingLearningPanel)
+        {
+            dialogueController.HideAllPanels();
+            showingLearningPanel = false;
+        }
         playerController.SetMovement(true);
         playerController.LockPosition(false);
 

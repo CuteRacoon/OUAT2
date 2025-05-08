@@ -18,15 +18,19 @@ public class DialogueController : MonoBehaviour
     private Text text;
     private Text learningText;
     private bool skipRequested;
+    private bool canSkip = true;
+
     private bool isDialoguePlaying;
     public bool IsDialoguePlaying => isDialoguePlaying;
     private GameLogic gameLogic;
 
     public Color girlColor = new Color32(0xCD, 0x19, 0x19, 0xFF);
     public Color othersColor = Color.white;
+
     private Button[] choiceButtons;
     private float delay;
     private Coroutine dialogueCoroutine;
+    private Coroutine learningPanelCoroutine;
 
     void Start()
     {
@@ -52,6 +56,10 @@ public class DialogueController : MonoBehaviour
     {
         learningText.text = text;
         learningPanel.SetActive(true);
+    }
+    public void BlockSkippingForOneKnot()
+    {
+        canSkip = false;
     }
     public void HideAllPanels()
     {
@@ -124,7 +132,6 @@ public class DialogueController : MonoBehaviour
     {
         isDialoguePlaying = true;
         text.text = "";
-        learningText.text = "";
 
         while (story.canContinue || story.currentChoices.Count > 0)
         {
@@ -134,7 +141,6 @@ public class DialogueController : MonoBehaviour
                 text.color = girlColor;
                 string line = story.Continue().Trim();
                 float delay = 3f;
-                bool isLearning = false;
                 bool shouldAddDash = true;
 
                 if (story.currentTags != null)
@@ -145,25 +151,14 @@ public class DialogueController : MonoBehaviour
                             delay = parsedDelay;
                         else if (tag == "othersLine")
                             text.color = othersColor;
-                        else if (tag == "learningPhrase")
-                            isLearning = true;
 
                         if (noDashTags.Contains(tag))
                             shouldAddDash = false;
                     }
                 }
                 string endLine = shouldAddDash ? "- " + line : line;
-
-                if (isLearning)
-                {
-                    learningPanel.SetActive(true);
-                    learningText.text = endLine;
-                }
-                else
-                {
-                    textPanel.SetActive(true);
-                    text.text = endLine;
-                }
+                textPanel.SetActive(true);
+                text.text = endLine;
                 yield return WaitOrSkip(delay);
             } 
 
@@ -177,8 +172,8 @@ public class DialogueController : MonoBehaviour
 
         yield return new WaitForSeconds(0.5f);
         textPanel.SetActive(false);
-        learningPanel.SetActive(false);
         isDialoguePlaying = false;
+        canSkip = true;
     }
 
     private void DisplayChoices()
@@ -230,7 +225,7 @@ public class DialogueController : MonoBehaviour
 
         while (timer < duration && !skipRequested)
         {
-            if (Input.GetMouseButtonDown(0))
+            if (Input.GetMouseButtonDown(0) && canSkip)
             {
                 skipRequested = true;
                 break;
@@ -243,7 +238,7 @@ public class DialogueController : MonoBehaviour
 
     void Update()
     {
-        if (isDialoguePlaying && Input.GetMouseButtonDown(0))
+        if (isDialoguePlaying && Input.GetMouseButtonDown(0) && canSkip)
         {
             skipRequested = true;
         }

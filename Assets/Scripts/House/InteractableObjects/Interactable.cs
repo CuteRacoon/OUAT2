@@ -29,6 +29,7 @@ public class Interactable : MonoBehaviour
     protected Outline outlineComponent;
     protected CameraBehaviour cameraBehaviour;
     protected OutlineSettings outlineSettings;
+    protected InteractionController interactionController;
     protected GameLogic gameLogic;
 
     protected virtual void Start()
@@ -37,6 +38,7 @@ public class Interactable : MonoBehaviour
         rb = GetComponent<Rigidbody>();
         gameLogic = FindAnyObjectByType<GameLogic>();
         cameraBehaviour = FindAnyObjectByType<CameraBehaviour>();
+        interactionController = FindAnyObjectByType<InteractionController>();
 
         if (rb == null)
         {

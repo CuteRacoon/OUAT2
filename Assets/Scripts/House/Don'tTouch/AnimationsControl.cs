@@ -15,7 +15,7 @@ public class AnimationsControl : MonoBehaviour
     public bool isFull = false;
 
     public Animation mortarAnime;
-    public GameLogic gameLogic;
+    private GameLogic gameLogic;
 
     public Collider[] bowlColliders;
 
