@@ -5,6 +5,7 @@ public class TriggerController : MonoBehaviour
     private PlayerController playerController;
     private InteractionController interactionController;
     public int index;
+    public bool canInteract = true;
 
     void Start()
     {
@@ -16,7 +17,7 @@ public class TriggerController : MonoBehaviour
     void OnTriggerEnter(Collider other)
     {
         // Проверяем, что в триггер вошел игрок
-        if (other.CompareTag("Player"))
+        if (other.CompareTag("Player") && canInteract)
         {
             // Устанавливаем флаг
             playerController.SetPlayerInside(true);
@@ -26,7 +27,7 @@ public class TriggerController : MonoBehaviour
     void OnTriggerStay(Collider other)
     {
         // Проверяем, что в триггер вошел игрок
-        if (other.CompareTag("Player"))
+        if (other.CompareTag("Player") && canInteract)
         {
             // Устанавливаем флаг
             playerController.SetPlayerInside(true);
@@ -36,7 +37,7 @@ public class TriggerController : MonoBehaviour
     void OnTriggerExit(Collider other)
     {
         // Проверяем, что в триггер вошел игрок
-        if (other.CompareTag("Player"))
+        if (other.CompareTag("Player") && canInteract)
         {
             // Устанавливаем флаг
             playerController.SetPlayerInside(false);

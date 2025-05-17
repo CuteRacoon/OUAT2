@@ -23,6 +23,7 @@ public class DialogueController : MonoBehaviour
     private bool isDialoguePlaying;
     public bool IsDialoguePlaying => isDialoguePlaying;
     private GameLogic gameLogic;
+    private ActionController actionController;
 
     public Color girlColor = new Color32(0xCD, 0x19, 0x19, 0xFF);
     public Color othersColor = Color.white;
@@ -34,6 +35,7 @@ public class DialogueController : MonoBehaviour
 
     void Start()
     {
+        actionController = FindAnyObjectByType<ActionController>();
         choiceButtons = choiceButtonsParent.GetComponentsInChildren<Button>();
         gameLogic = FindAnyObjectByType<GameLogic>();
 
@@ -78,6 +80,10 @@ public class DialogueController : MonoBehaviour
         if (dialogueIndex != 3)
         {
             gameLogic.ResetGame();
+        }
+        else
+        {
+            actionController.StartPotionCutScene();
         }
     }
 

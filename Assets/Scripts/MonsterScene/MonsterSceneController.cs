@@ -26,7 +26,7 @@ public class MonsterSceneController : MonoBehaviour
     {
         basicBehaviour.StartGirlInMonsterSceneAnimation(0.5f, 0.5f);
         basicBehaviour.LockTempBehaviour(basicBehaviour.GetHashCode());
-        Camera monsterCamera = cameraBehaviour.GetMonsterCamera();
+        Camera monsterCamera = cameraBehaviour.GetCameraByIndex(1);
         Animation anime = monsterCamera.GetComponent<Animation>();
         anime.Play("MonsterCameraAnimation");
     }
@@ -37,7 +37,7 @@ public class MonsterSceneController : MonoBehaviour
     void TeleportPlayer()
     {
         // Получаем камеру
-        Camera monsterCamera = cameraBehaviour.GetMonsterCamera();
+        Camera monsterCamera = cameraBehaviour.GetCameraByIndex(1);
 
         // Проверяем, что камера не null
         if (monsterCamera == null)

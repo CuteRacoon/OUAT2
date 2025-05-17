@@ -47,7 +47,7 @@ public class Interactable : MonoBehaviour
             return;
         }
         //tableCamera = Camera.main;
-        tableCamera = cameraBehaviour.GetCamera();
+        tableCamera = cameraBehaviour.GetCameraByIndex(1);
         rb.useGravity = true;
         rb.isKinematic = false;
 

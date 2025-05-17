@@ -39,12 +39,8 @@ public class CameraBehaviour : MonoBehaviour
         cameras[index].gameObject.SetActive(true);
         currentCameraIndex = index;
     }
-    public Camera GetCamera()
+    public Camera GetCameraByIndex(int index)
     {
-        return cameras[1];
-    }
-    public Camera GetMonsterCamera()
-    {
-        return cameras[1];
+        return cameras[index];
     }
 }

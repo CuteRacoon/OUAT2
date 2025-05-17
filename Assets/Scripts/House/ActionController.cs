@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.Video;
 
 public class ActionController : MonoBehaviour
 {
@@ -11,6 +12,8 @@ public class ActionController : MonoBehaviour
 
     [SerializeField] private GameObject gameCanvas;
     [SerializeField] private GameObject prehistoryCanvas;
+    [SerializeField] private GameObject endPotion;
+    [SerializeField] private GameObject cutScene;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -19,10 +22,12 @@ public class ActionController : MonoBehaviour
         cameraBehaviour = FindAnyObjectByType<CameraBehaviour>();
         interactionController = FindAnyObjectByType<InteractionController>();
 
+        cutScene.gameObject.SetActive(false);
         // При билде раскомментить
         //gameCanvas.SetActive(false);
         //prehistoryCanvas.SetActive(true);
     }
+
     public void StartBeginningDialogue()
     {
         cameraBehaviour.SwitchCamera(3);
@@ -94,5 +99,29 @@ public class ActionController : MonoBehaviour
     {
         yield return new WaitForSeconds(1f);
         dialogueController.PlayPartOfPlot("recipe_hint_1");
+    }
+    public void StartPotionCutScene()
+    {
+        StartCoroutine(PotionCutScene());
+    }
+    private IEnumerator PotionCutScene()
+    {
+        dialogueController.LearningPanelText("Нажмите Q, чтобы взять зелье в руки");
+        bool clicked = false;
+        while (!clicked)
+        {
+            if (Input.GetKeyDown(KeyCode.Q)) clicked = true;
+            yield return null;
+        }
+        dialogueController.HideAllPanels();
+        endPotion.SetActive(false);
+        yield return new WaitForSeconds(0.5f);
+        //Debug.Log("Запускаю кат-сцену с братом");
+        cutScene.gameObject.SetActive(true);
+        // Ждём, пока видео не закончится
+        yield return new WaitForSeconds(22f);
+        cameraBehaviour.SwitchCamera(0);
+        interactionController.ResetInteraction();
+        cutScene.gameObject.SetActive(false);
     }
 }

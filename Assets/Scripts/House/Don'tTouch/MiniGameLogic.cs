@@ -91,7 +91,6 @@ public class GameLogic : MonoBehaviour
         List<KeyValuePair<int, int>> expectedObjects = new List<KeyValuePair<int, int>>()
         {
             new KeyValuePair<int, int>(0, 1),
-            new KeyValuePair<int, int>(1, 2),
             new KeyValuePair<int, int>(1, 3),
             new KeyValuePair<int, int>(2, 1),
             new KeyValuePair<int, int>(2, 2)
@@ -105,34 +104,35 @@ public class GameLogic : MonoBehaviour
         if (differences > 0 && differences <= 2)
         {
             StartCoroutine(dialogueController.EndGame(1));
+            Debug.Log("Количество несовпадений: " + differences);
             animationsControl.ObjectsOn(2, 4);
         }
         else if (differences > 2)
         {
             StartCoroutine(dialogueController.EndGame(2));
+            Debug.Log("Количество несовпадений: " + differences);
             animationsControl.ObjectsOn(3, 4);
         }
         else if (differences == 0 && CollectedObjects.Count == expectedObjects.Count)
         {
             StartCoroutine(dialogueController.EndGame(3));
+            Debug.Log("Количество несовпадений: " + differences);
             animationsControl.ObjectsOn(4, 4);
         }
     }
     public void SortList(List<KeyValuePair<int, int>> list)
     {
-        list.Sort((x, y) => x.Key.CompareTo(y.Key));
+        list.Sort((x, y) =>
+        {
+            int keyComparison = x.Key.CompareTo(y.Key);
+            return keyComparison != 0 ? keyComparison : x.Value.CompareTo(y.Value);
+        });
     }
     private int CountDifferences(List<KeyValuePair<int, int>> list1, List<KeyValuePair<int, int>> list2)
     {
-        int differences = 0;
-        if (list1.Count != list2.Count)
-        {
-            differences = Mathf.Abs(list1.Count - list2.Count); //если количество элементов разное
-
-            //return differences;
-        }
-        //сравниваем количество элементов, равное минимальному из двух списков
+        int differences = Mathf.Abs(list1.Count - list2.Count);
         int count = Mathf.Min(list1.Count, list2.Count);
+
         for (int i = 0; i < count; i++)
         {
             if (list1[i].Key != list2[i].Key || list1[i].Value != list2[i].Value)
@@ -140,6 +140,7 @@ public class GameLogic : MonoBehaviour
                 differences++;
             }
         }
+
         return differences;
     }
     public void AddToObjectsList(int index, int objectIndicator)
@@ -161,9 +162,9 @@ public class GameLogic : MonoBehaviour
             isGameOver = false;
             return false;
         }
-        if (CollectedObjects.Count > 4)
+        if (CollectedObjects.Count > 3)
         {
-            Debug.Log("Ингредиентов 4 штуки");
+            Debug.Log("Ингредиентов 3 штуки");
             return true;
         }
         return false;
