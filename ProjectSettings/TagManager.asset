@@ -9,6 +9,7 @@ TagManager:
   - herbs
   - bowl
   - Canvas
+  - PagesUI
   layers:
   - Default
   - TransparentFX

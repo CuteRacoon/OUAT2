@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections;
 
 public class BookmarksBehaviour : MonoBehaviour
 {
@@ -6,16 +7,13 @@ public class BookmarksBehaviour : MonoBehaviour
     public AudioClip bookMarkSound;
 
     private AudioSource audioSource;
-    private GameObject canvas;
+    private MainMenuController mainMenuController;
 
     private void Start()
     {
         audioSource = GetComponent<AudioSource>();
-        canvas = GameObject.FindWithTag("Canvas");
-        if (canvas != null)
-        {
-            canvas.SetActive(false);
-        }
+        mainMenuController = FindAnyObjectByType<MainMenuController>();
+        
     }
     public void PlayTableSound(int state)
     {
@@ -38,6 +36,6 @@ public class BookmarksBehaviour : MonoBehaviour
     }
     public void ActiveBookButtons()
     {
-        canvas.SetActive(true);
+        mainMenuController.ActivateCanvas();
     }
 }
