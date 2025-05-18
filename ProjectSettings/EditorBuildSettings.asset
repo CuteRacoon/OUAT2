@@ -12,7 +12,7 @@ EditorBuildSettings:
     path: Assets/Scenes/House.unity
     guid: 0f98dc98d0a7b7749809618bb5c59441
   - enabled: 1
-    path: Assets/Scenes/Monster.unity
+    path: Assets/Scenes/Forest.unity
     guid: 4aecf1573f2884c498de89e2260587da
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}

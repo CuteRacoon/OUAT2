@@ -11,8 +11,7 @@ public class DialogueController : MonoBehaviour
     [SerializeField] private GameObject learningPanel;
     [SerializeField] private TextAsset inkFile;
     [SerializeField] private GameObject choiceButtonsParent;
-
-    HashSet<string> noDashTags = new HashSet<string> { "othersLine", "learningPhrase" };
+    [SerializeField] private Text personNameText;
 
     private Story story;
     private Text text;
@@ -32,6 +31,14 @@ public class DialogueController : MonoBehaviour
     private float delay;
     private Coroutine dialogueCoroutine;
     private Coroutine learningPanelCoroutine;
+
+    private Dictionary<int, string> othersNames = new Dictionary<int, string>
+    {
+        { 1, "Всемил" },
+        { 2, "Агафья"},
+        { 3, "Марфа" },
+        { 4, "Печка"}
+    };
 
     void Start()
     {
@@ -147,24 +154,33 @@ public class DialogueController : MonoBehaviour
                 text.color = girlColor;
                 string line = story.Continue().Trim();
                 float delay = 3f;
-                bool shouldAddDash = true;
+                personNameText.text = "";
 
                 if (story.currentTags != null)
                 {
                     foreach (string tag in story.currentTags)
                     {
                         if (tag.StartsWith("wait:") && float.TryParse(tag.Substring(5), out float parsedDelay))
+                        {
                             delay = parsedDelay;
-                        else if (tag == "othersLine")
+                        }
+                        else if (tag.StartsWith("othersLine_"))
+                        {
                             text.color = othersColor;
 
-                        if (noDashTags.Contains(tag))
-                            shouldAddDash = false;
+                            if (int.TryParse(tag.Substring("othersLine_".Length), out int index))
+                            {
+                                if (othersNames.TryGetValue(index, out string name))
+                                    personNameText.text = name;
+                                else
+                                    personNameText.text = "???";
+                            }
+                        }
                     }
                 }
-                string endLine = shouldAddDash ? "- " + line : line;
+
                 textPanel.SetActive(true);
-                text.text = endLine;
+                text.text = line;
                 yield return WaitOrSkip(delay);
             } 
 
@@ -202,7 +218,8 @@ public class DialogueController : MonoBehaviour
 
                     // Показ выбора игрока на экране
                     text.color = girlColor;
-                    text.text = "- " + choices[choiceIndex].text.Trim();
+                    personNameText.text = "";
+                    text.text = choices[choiceIndex].text.Trim();
 
                     story.ChooseChoiceIndex(choiceIndex);
                     StartCoroutine(ShowChoiceThenContinue());
@@ -217,6 +234,7 @@ public class DialogueController : MonoBehaviour
 
     private IEnumerator ShowChoiceThenContinue()
     {
+        personNameText.text = "";
         skipRequested = false;
         yield return WaitOrSkip(3f); // <- теперь можно кликнуть и прервать ожидание
 
