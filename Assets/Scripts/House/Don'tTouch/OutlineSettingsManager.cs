@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class OutlineSettings : MonoBehaviour
+public class OutlineSettingsManager : MonoBehaviour
 {
     [Tooltip("Цвет обводки, используемый для выделения интерактивных объектов.")]
     public Color basicOutlineColor = Color.yellow;  // Задайте цвет по умолчанию.

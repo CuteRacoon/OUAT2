@@ -4,7 +4,7 @@ using System.Collections;
 public class Roots : Interactable
 {
     private Animation anime;
-    private AnimationsControl animationsControl;
+    private AnimationsManager animationsControl;
     private bool needToDelete = false;
 
     private int objectIndicator = 0;
@@ -23,7 +23,7 @@ public class Roots : Interactable
             Debug.LogWarning("Нет компонента Animation на объекте Roots");
         }
 
-        animationsControl = FindAnyObjectByType<AnimationsControl>();
+        animationsControl = FindAnyObjectByType<AnimationsManager>();
 
         if (tag != "roots") Debug.LogWarning("Тэг объекта не Roots");
         meshRenderer = GetComponentInChildren<MeshRenderer>();

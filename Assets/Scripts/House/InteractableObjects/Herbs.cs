@@ -4,7 +4,7 @@ using System.Collections;
 public class Herbs : Interactable
 {
     private Animation anime;
-    private AnimationsControl animationsControl;
+    private AnimationsManager animationsControl;
 
     private MeshRenderer meshRenderer;
     private Collider boxCollider;
@@ -24,7 +24,7 @@ public class Herbs : Interactable
             Debug.LogWarning("Нет компонента Animation на объекте Herbs");
         }
 
-        this.animationsControl = FindAnyObjectByType<AnimationsControl>();
+        this.animationsControl = FindAnyObjectByType<AnimationsManager>();
 
         if (tag != "herbs") Debug.LogWarning("Тэг объекта не Herbs");
 

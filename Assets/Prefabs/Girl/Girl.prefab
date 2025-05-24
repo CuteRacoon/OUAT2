@@ -14,7 +14,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 100052, guid: 1cb4dadae13a76b4480bc3f50882dfea, type: 3}
       propertyPath: m_Name
-      value: JunkoChan
+      value: Girl
       objectReference: {fileID: 0}
     - target: {fileID: 100052, guid: 1cb4dadae13a76b4480bc3f50882dfea, type: 3}
       propertyPath: m_TagString
@@ -154,7 +154,7 @@ Rigidbody:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2927442387256380053}
   serializedVersion: 4
-  m_Mass: 80
+  m_Mass: 50
   m_Drag: 0
   m_AngularDrag: 0.05
   m_CenterOfMass: {x: 0, y: 0, z: 0}
@@ -200,9 +200,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b04cfe015b44cfc4fb97244a8ce150c0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  walkSpeed: 0.3
-  runSpeed: 0.3
-  sprintSpeed: 2
+  walkSpeed: 0.12
+  runSpeed: 0.12
+  sprintSpeed: 0.5
   speedDampTime: 0.1
   jumpButton: Jump
   jumpHeight: 1.5

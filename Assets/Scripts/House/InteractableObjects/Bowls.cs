@@ -4,7 +4,7 @@ using System.Collections;
 public class Bowls : Interactable
 {
     private Animation anime;
-    private AnimationsControl animationsControl;
+    private AnimationsManager animationsControl;
 
     protected void Awake()
     {
@@ -16,7 +16,7 @@ public class Bowls : Interactable
             Debug.LogWarning("Нет компонента Animation на объекте bowl");
         }
 
-        animationsControl = FindAnyObjectByType<AnimationsControl>();
+        animationsControl = FindAnyObjectByType<AnimationsManager>();
 
         if (tag != "bowl") Debug.LogWarning("Тэг объекта не bowl");
     }
@@ -38,7 +38,6 @@ public class Bowls : Interactable
             yield return new WaitForSeconds(anime[animationName].length - 0.5f);
             animationsControl.CleanDust();
 
-
             if (index == 3)
             {
                 if (!gameLogic.CheckNumberOfObjects())
@@ -50,7 +49,7 @@ public class Bowls : Interactable
                     gameLogic.isGameOver = true;
                     gameLogic.CheckNumberOfObjects();
                 }
-
+                gameLogic.AccessBowls(3, false);
             }
             if (index == 1)
             {
@@ -61,8 +60,8 @@ public class Bowls : Interactable
         else
         {
             isReturning = true;
+            DropObject();
         }
         DropObject();
-        if (index == 3) gameLogic.AccessBowls(3, false);
     }
 }

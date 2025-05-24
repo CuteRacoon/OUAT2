@@ -4,14 +4,14 @@ using System.Collections;
 using UnityEngine.Experimental.Rendering;
 using Unity.VisualScripting;
 
-public class InteractionController : MonoBehaviour
+public class InteractionManager : MonoBehaviour
 {
     public GameObject stayingGirlsObj;
     public GameObject hintPanelsParent;
 
-    private CameraBehaviour cameraBehaviour;
+    private CameraManager cameraBehaviour;
     private PlayerController playerController;
-    private DialogueController dialogueController;
+    private DialogueManager dialogueController;
     private TriggerController[] triggerControllers;
 
     private Transform[] stayingGirls;
@@ -34,6 +34,17 @@ public class InteractionController : MonoBehaviour
     public bool recipeChecked = false;
     private Coroutine windowDialogueCoroutine;
 
+    //создаем singleton, поскольку скрипт - менеджер
+    public static InteractionManager Instance { get; private set; }
+    private void Awake()
+    {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+        Instance = this;
+    }
     void Start()
     {
         hintPanels = hintPanelsParent.transform.Cast<Transform>()
@@ -55,9 +66,9 @@ public class InteractionController : MonoBehaviour
         activePanelPositions[0] = new Vector2(850, 230);
         activePanelPositions[1] = new Vector2(-700, -230);
 
-        cameraBehaviour = FindAnyObjectByType<CameraBehaviour>();
+        cameraBehaviour = FindAnyObjectByType<CameraManager>();
         playerController = FindAnyObjectByType<PlayerController>();
-        dialogueController = FindAnyObjectByType<DialogueController>();
+        dialogueController = FindAnyObjectByType<DialogueManager>();
         triggerControllers = FindObjectsByType<TriggerController>(FindObjectsSortMode.None)
             .OrderBy(tc => tc.index)
             .ToArray();
@@ -298,6 +309,30 @@ public class InteractionController : MonoBehaviour
         if (activeIndex >= 0 && activeIndex < hintPanels.Length)
         {
             hintPanels[activeIndex].GetComponent<RectTransform>().anchoredPosition = defaultPanelPositions[activeIndex];
+        }
+    }
+    void OnEnable()
+    {
+        TriggerController.OnPlayerEnterTrigger += HandleTriggerEnter;
+        TriggerController.OnPlayerExitTrigger += HandleTriggerExit;
+    }
+
+    void OnDisable()
+    {
+        TriggerController.OnPlayerEnterTrigger -= HandleTriggerEnter;
+        TriggerController.OnPlayerExitTrigger -= HandleTriggerExit;
+    }
+
+    private void HandleTriggerEnter(TriggerController trigger)
+    {
+        SetActiveTrigger(trigger.index);
+    }
+
+    private void HandleTriggerExit(TriggerController trigger)
+    {
+        if (IsCurrentTrigger(trigger.index))
+        {
+            SetActiveTrigger(-1);
         }
     }
 }

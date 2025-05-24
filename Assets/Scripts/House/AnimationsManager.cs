@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class AnimationsControl : MonoBehaviour
+public class AnimationsManager : MonoBehaviour
 {
     [SerializeField] GameObject berriesParent;
     [SerializeField] GameObject rootsParent;
@@ -15,15 +15,15 @@ public class AnimationsControl : MonoBehaviour
     public bool isFull = false;
 
     public Animation mortarAnime;
-    private GameLogic gameLogic;
+    private MiniGameLogicManager gameLogic;
 
     public Collider[] bowlColliders;
 
-    public static AnimationsControl Instance { get; private set; }
+    public static AnimationsManager Instance { get; private set; }
 
     private void Awake()
     {
-        gameLogic = FindAnyObjectByType<GameLogic>();
+        gameLogic = FindAnyObjectByType<MiniGameLogicManager>();
         // Синглтон, для надёжности
         if (Instance != null && Instance != this)
         {

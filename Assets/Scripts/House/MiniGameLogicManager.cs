@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -5,29 +6,42 @@ using System.Runtime.Serialization;
 using Unity.VisualScripting;
 using UnityEngine;
 
-public class GameLogic : MonoBehaviour
+public class MiniGameLogicManager : MonoBehaviour
 {
     public GameObject[] objectsToOutline;
+    // тоже сделать сигнал какой-нибудь
+    public bool isGameOver = false;
 
     private static GameObject currentObject;
-    private AnimationsControl animationsControl;
     private int rootIndex;
     private int neededBowlIndex = -1;
-    public bool isGameOver = false;
-    private DialogueController dialogueController;
+
+    private AnimationsManager animationsControl;
 
     // Словари для хранения объектов по тегам и индексам
-    public Dictionary<int, GameObject> Roots { get; private set; } = new Dictionary<int, GameObject>();
-    public Dictionary<int, GameObject> Berries { get; private set; } = new Dictionary<int, GameObject>();
-    public Dictionary<int, GameObject> Bowls { get; private set; } = new Dictionary<int, GameObject>();
-    public Dictionary<int, GameObject> Herbs { get; private set; } = new Dictionary<int, GameObject>();
+    private Dictionary<int, GameObject> Roots = new Dictionary<int, GameObject>();
+    private Dictionary<int, GameObject> Berries = new Dictionary<int, GameObject>();
+    private Dictionary<int, GameObject> Bowls = new Dictionary<int, GameObject>();
+    private Dictionary<int, GameObject> Herbs = new Dictionary<int, GameObject>();
 
-    public List<KeyValuePair<int, int>> CollectedObjects { get; private set; } = new List<KeyValuePair<int, int>>();
+    private List<KeyValuePair<int, int>> CollectedObjects = new List<KeyValuePair<int, int>>();
+    public static MiniGameLogicManager Instance { get; private set; }
+    public static event Action<int> OnGameEnded;
+
+    private void Awake()
+    {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+        Instance = this;
+    }
 
     private void Start()
     {
-        dialogueController = FindAnyObjectByType<DialogueController>();
-        animationsControl = FindAnyObjectByType<AnimationsControl>();
+        DialogueManager.CanResetGame += HandleResetGame;
+        animationsControl = FindAnyObjectByType<AnimationsManager>();
         currentObject = null;
         PopulateResources();
 
@@ -35,6 +49,10 @@ public class GameLogic : MonoBehaviour
         AccessBowls(2, false);
         AccessBowls(1, false);
         AccessBowls(3, false);
+    }
+    void HandleResetGame()
+    {
+        ResetGame();
     }
     public void EndGame()
     {
@@ -103,19 +121,19 @@ public class GameLogic : MonoBehaviour
         int differences = CountDifferences(CollectedObjects, expectedObjects);
         if (differences > 0 && differences <= 2)
         {
-            StartCoroutine(dialogueController.EndGame(1));
+            OnGameEnded?.Invoke(1);
             Debug.Log("Количество несовпадений: " + differences);
             animationsControl.ObjectsOn(2, 4);
         }
         else if (differences > 2)
         {
-            StartCoroutine(dialogueController.EndGame(2));
+            OnGameEnded?.Invoke(2);
             Debug.Log("Количество несовпадений: " + differences);
             animationsControl.ObjectsOn(3, 4);
         }
         else if (differences == 0 && CollectedObjects.Count == expectedObjects.Count)
         {
-            StartCoroutine(dialogueController.EndGame(3));
+            OnGameEnded?.Invoke(3);
             Debug.Log("Количество несовпадений: " + differences);
             animationsControl.ObjectsOn(4, 4);
         }

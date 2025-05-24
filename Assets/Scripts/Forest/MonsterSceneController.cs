@@ -7,7 +7,7 @@ public class MonsterSceneController : MonoBehaviour
     private BasicBehaviour basicBehaviour; // Drag the player's BasicBehaviour here in the Inspector
     //private Animation girlMovementAnime;
     public GameObject girlComponent;
-    private CameraBehaviour cameraBehaviour;
+    private CameraManager cameraBehaviour;
     private CameraFollowScript cameraFollowScript;
 
     public float teleportDistanceZ = 20f;
@@ -19,7 +19,7 @@ public class MonsterSceneController : MonoBehaviour
         playerController = girlComponent.GetComponentInChildren<PlayerController>();
         basicBehaviour = girlComponent.GetComponentInChildren<BasicBehaviour>();
         //girlMovementAnime = girlComponent.GetComponentInChildren<Animation>();
-        cameraBehaviour = FindAnyObjectByType<CameraBehaviour>();
+        cameraBehaviour = FindAnyObjectByType<CameraManager>();
         cameraFollowScript = FindAnyObjectByType<CameraFollowScript>();
     }
     public void StartRunning()

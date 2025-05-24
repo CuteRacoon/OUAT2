@@ -27,18 +27,18 @@ public class Interactable : MonoBehaviour
     protected Vector3 objectWorldPosition;
 
     protected Outline outlineComponent;
-    protected CameraBehaviour cameraBehaviour;
-    protected OutlineSettings outlineSettings;
-    protected InteractionController interactionController;
-    protected GameLogic gameLogic;
+    protected CameraManager cameraBehaviour;
+    protected OutlineSettingsManager outlineSettings;
+    protected InteractionManager interactionController;
+    protected MiniGameLogicManager gameLogic;
 
     protected virtual void Start()
     {
         tableLayer = LayerMask.GetMask("Table");
         rb = GetComponent<Rigidbody>();
-        gameLogic = FindAnyObjectByType<GameLogic>();
-        cameraBehaviour = FindAnyObjectByType<CameraBehaviour>();
-        interactionController = FindAnyObjectByType<InteractionController>();
+        gameLogic = FindAnyObjectByType<MiniGameLogicManager>();
+        cameraBehaviour = FindAnyObjectByType<CameraManager>();
+        interactionController = FindAnyObjectByType<InteractionManager>();
 
         if (rb == null)
         {
@@ -61,7 +61,7 @@ public class Interactable : MonoBehaviour
             UpdateOutlineState(); // Инициализируем состояние Outline в Start
         }
 
-        outlineSettings = FindAnyObjectByType<OutlineSettings>();
+        outlineSettings = FindAnyObjectByType<OutlineSettingsManager>();
         initialPosition = transform.position;
         initialScale = transform.localScale;
         initialRotation = transform.rotation.eulerAngles;

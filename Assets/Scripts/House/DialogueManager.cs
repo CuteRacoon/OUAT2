@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using Ink.Runtime;
+using System;
 
-public class DialogueController : MonoBehaviour
+public class DialogueManager : MonoBehaviour
 {
     
     [SerializeField] private GameObject textPanel;
@@ -21,8 +22,7 @@ public class DialogueController : MonoBehaviour
 
     private bool isDialoguePlaying;
     public bool IsDialoguePlaying => isDialoguePlaying;
-    private GameLogic gameLogic;
-    private ActionController actionController;
+    private ActionManager actionController;
 
     public Color girlColor = new Color32(0xCD, 0x19, 0x19, 0xFF);
     public Color othersColor = Color.white;
@@ -30,7 +30,6 @@ public class DialogueController : MonoBehaviour
     private Button[] choiceButtons;
     private float delay;
     private Coroutine dialogueCoroutine;
-    private Coroutine learningPanelCoroutine;
 
     private Dictionary<int, string> othersNames = new Dictionary<int, string>
     {
@@ -39,12 +38,23 @@ public class DialogueController : MonoBehaviour
         { 3, "Марфа" },
         { 4, "Печка"}
     };
+    public static event Action CanResetGame;
+    public static DialogueManager Instance { get; private set; }
+    private void Awake()
+    {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+        Instance = this;
+    }
 
     void Start()
     {
-        actionController = FindAnyObjectByType<ActionController>();
+        MiniGameLogicManager.OnGameEnded += HandleGameEnded;
+        actionController = FindAnyObjectByType<ActionManager>();
         choiceButtons = choiceButtonsParent.GetComponentsInChildren<Button>();
-        gameLogic = FindAnyObjectByType<GameLogic>();
 
         text = textPanel.GetComponentInChildren<Text>();
         textPanel.SetActive(false);
@@ -60,6 +70,10 @@ public class DialogueController : MonoBehaviour
         }
 
         story = new Story(inkFile.text);
+    }
+    private void HandleGameEnded(int dialogueIndex)
+    {
+        StartCoroutine(EndGame(dialogueIndex));
     }
     public void LearningPanelText(string text)
     {
@@ -86,7 +100,7 @@ public class DialogueController : MonoBehaviour
 
         if (dialogueIndex != 3)
         {
-            gameLogic.ResetGame();
+            CanResetGame?.Invoke();
         }
         else
         {

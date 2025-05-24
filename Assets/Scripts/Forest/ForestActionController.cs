@@ -6,12 +6,12 @@ using UnityEngine.Video;
 
 public class ForestActionController : MonoBehaviour
 {
-    private DialogueController dialogueController;
+    private DialogueManager dialogueController;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        dialogueController = FindAnyObjectByType<DialogueController>();
+        dialogueController = FindAnyObjectByType<DialogueManager>();
         StartCoroutine(DialogueCoroutine());
     }
 

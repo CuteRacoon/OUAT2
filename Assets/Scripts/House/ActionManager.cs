@@ -4,23 +4,33 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Video;
 
-public class ActionController : MonoBehaviour
+public class ActionManager : MonoBehaviour
 {
-    private DialogueController dialogueController;
-    private CameraBehaviour cameraBehaviour;
-    private InteractionController interactionController;
+    private DialogueManager dialogueController;
+    private CameraManager cameraBehaviour;
+    private InteractionManager interactionController;
 
     [SerializeField] private GameObject gameCanvas;
     [SerializeField] private GameObject prehistoryCanvas;
     [SerializeField] private GameObject endPotion;
     [SerializeField] private GameObject cutScene;
+    public static ActionManager Instance { get; private set; }
+    private void Awake()
+    {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+        Instance = this;
+    }
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        dialogueController = FindAnyObjectByType<DialogueController>();
-        cameraBehaviour = FindAnyObjectByType<CameraBehaviour>();
-        interactionController = FindAnyObjectByType<InteractionController>();
+        dialogueController = FindAnyObjectByType<DialogueManager>();
+        cameraBehaviour = FindAnyObjectByType<CameraManager>();
+        interactionController = FindAnyObjectByType<InteractionManager>();
 
         cutScene.gameObject.SetActive(false);
         // При билде раскомментить

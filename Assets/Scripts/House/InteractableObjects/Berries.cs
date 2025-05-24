@@ -6,7 +6,7 @@ public class Berries : Interactable
     public GameObject berriesObject; // Refactor berries -> berriesObject
     private Vector3[] initialChildPositions;
     private Animation anime;
-    private AnimationsControl animationsControl;
+    private AnimationsManager animationsControl;
 
     private float timeToWait = 1.07f;
 
@@ -22,7 +22,7 @@ public class Berries : Interactable
             Debug.LogWarning("Нет компонента Animation на объекте Berries");
         }
 
-        animationsControl = FindAnyObjectByType<AnimationsControl>();
+        animationsControl = FindAnyObjectByType<AnimationsManager>();
 
         if (berriesObject != null)
         {

@@ -12,7 +12,7 @@ public class BookZoom : MonoBehaviour
     public float scrollCooldown = 0.04f;
     public float ratio = 6f;
 
-    private CameraBehaviour cameraBehaviour;
+    private CameraManager cameraBehaviour;
     private float initialFOV;
     private Vector3 initialPosition;
     private Quaternion initialRotation;
@@ -28,7 +28,7 @@ public class BookZoom : MonoBehaviour
 
     void Start()
     {
-        cameraBehaviour = FindAnyObjectByType<CameraBehaviour>();
+        cameraBehaviour = FindAnyObjectByType<CameraManager>();
         if (mainCamera == null)
             mainCamera = cameraBehaviour.GetCameraByIndex(2);
 

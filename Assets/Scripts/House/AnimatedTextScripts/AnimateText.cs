@@ -36,10 +36,10 @@ namespace BitWave_Labs.AnimatedTextReveal
 
         // Holds the running sequence coroutine so we don't start it twice.
         private Coroutine _cycleCoroutine;
-        private ActionController actionController;
+        private ActionManager actionController;
         private void Start()
         {
-            actionController = FindAnyObjectByType<ActionController>();
+            actionController = FindAnyObjectByType<ActionManager>();
         }
 
         /// <summary>
