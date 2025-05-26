@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -22,7 +23,7 @@ public class MiniGameLogicManager : MonoBehaviour
 
     private List<KeyValuePair<int, int>> CollectedObjects = new List<KeyValuePair<int, int>>();
     public static MiniGameLogicManager Instance { get; private set; }
-    public static event Action<int> OnGameEnded;
+    public static event Action CanStartPotionScene;
 
     private void Awake()
     {
@@ -36,7 +37,6 @@ public class MiniGameLogicManager : MonoBehaviour
 
     private void Start()
     {
-        DialogueManager.CanResetGame += HandleResetGame;
         animationsControl = FindAnyObjectByType<AnimationsManager>();
         currentObject = null;
         PopulateResources();
@@ -45,10 +45,6 @@ public class MiniGameLogicManager : MonoBehaviour
         AccessBowls(2, false);
         AccessBowls(1, false);
         AccessBowls(3, false);
-    }
-    void HandleResetGame()
-    {
-        ResetGame();
     }
     public void EndGame()
     {
@@ -98,6 +94,23 @@ public class MiniGameLogicManager : MonoBehaviour
             obj.SetActive(true);
         }
     }
+    private IEnumerator EndGame(int dialogueIndex)
+    {
+        string knotName = $"end_{dialogueIndex}";
+        DialogueManager.Instance.PlayPartOfPlot(knotName);
+
+        while (DialogueManager.Instance.IsDialoguePlaying)
+            yield return null;
+
+        if (dialogueIndex != 3)
+        {
+            ResetGame();
+        }
+        else
+        {
+            CanStartPotionScene?.Invoke();
+        }
+    }
     public void CheckIngredients()
     {
         animationsControl.ObjectsOn(-1, 3);
@@ -117,19 +130,19 @@ public class MiniGameLogicManager : MonoBehaviour
         int differences = CountDifferences(CollectedObjects, expectedObjects);
         if (differences > 0 && differences <= 2)
         {
-            OnGameEnded?.Invoke(1);
+            StartCoroutine(EndGame(1));
             Debug.Log("Количество несовпадений: " + differences);
             animationsControl.ObjectsOn(2, 4);
         }
         else if (differences > 2)
         {
-            OnGameEnded?.Invoke(2);
+            StartCoroutine(EndGame(2));
             Debug.Log("Количество несовпадений: " + differences);
             animationsControl.ObjectsOn(3, 4);
         }
         else if (differences == 0 && CollectedObjects.Count == expectedObjects.Count)
         {
-            OnGameEnded?.Invoke(3);
+            StartCoroutine(EndGame(3));
             Debug.Log("Количество несовпадений: " + differences);
             animationsControl.ObjectsOn(4, 4);
         }

@@ -22,7 +22,6 @@ public class DialogueManager : MonoBehaviour
 
     private bool isDialoguePlaying;
     public bool IsDialoguePlaying => isDialoguePlaying;
-    private ActionManager actionController;
 
     public Color girlColor = new Color32(0xCD, 0x19, 0x19, 0xFF);
     public Color othersColor = Color.white;
@@ -38,7 +37,6 @@ public class DialogueManager : MonoBehaviour
         { 3, "Марфа" },
         { 4, "Печка"}
     };
-    public static event Action CanResetGame;
     public static DialogueManager Instance { get; private set; }
     private void Awake()
     {
@@ -52,8 +50,6 @@ public class DialogueManager : MonoBehaviour
 
     void Start()
     {
-        MiniGameLogicManager.OnGameEnded += HandleGameEnded;
-        actionController = FindAnyObjectByType<ActionManager>();
         choiceButtons = choiceButtonsParent.GetComponentsInChildren<Button>();
 
         text = textPanel.GetComponentInChildren<Text>();
@@ -71,10 +67,6 @@ public class DialogueManager : MonoBehaviour
 
         story = new Story(inkFile.text);
     }
-    private void HandleGameEnded(int dialogueIndex)
-    {
-        StartCoroutine(EndGame(dialogueIndex));
-    }
     public void LearningPanelText(string text)
     {
         learningText.text = text;
@@ -88,24 +80,6 @@ public class DialogueManager : MonoBehaviour
     {
         textPanel.SetActive(false);
         learningPanel.SetActive(false);
-    }
-    public IEnumerator EndGame(int dialogueIndex)
-    {
-        string knotName = $"end_{dialogueIndex}";
-        dialogueCoroutine = StartCoroutine(PlayKnot(knotName, false));
-        yield return dialogueCoroutine;
-
-        while (isDialoguePlaying)
-            yield return null;
-
-        if (dialogueIndex != 3)
-        {
-            CanResetGame?.Invoke();
-        }
-        else
-        {
-            actionController.StartPotionCutScene();
-        }
     }
 
     public void PlayPartOfPlot(string knotName)

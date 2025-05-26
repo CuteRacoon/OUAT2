@@ -37,7 +37,15 @@ public class ActionManager : MonoBehaviour
         //gameCanvas.SetActive(false);
         //prehistoryCanvas.SetActive(true);
     }
+    private void OnEnable()
+    {
+        MiniGameLogicManager.CanStartPotionScene += StartPotionCutScene;
+    }
 
+    private void OnDisable()
+    {
+        MiniGameLogicManager.CanStartPotionScene -= StartPotionCutScene;
+    }
     public void StartBeginningDialogue()
     {
         cameraBehaviour.SwitchCamera(3);
