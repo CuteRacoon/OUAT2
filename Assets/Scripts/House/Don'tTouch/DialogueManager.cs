@@ -12,11 +12,12 @@ public class DialogueManager : MonoBehaviour
     [SerializeField] private GameObject learningPanel;
     [SerializeField] private TextAsset inkFile;
     [SerializeField] private GameObject choiceButtonsParent;
-    [SerializeField] private Text personNameText;
+    [SerializeField] private GameObject personNameObj;
 
     private Story story;
     private Text text;
     private Text learningText;
+    private Text personNameText;
     private bool skipRequested;
     private bool canSkip = true;
 
@@ -38,6 +39,7 @@ public class DialogueManager : MonoBehaviour
         { 4, "Печка"}
     };
     public static DialogueManager Instance { get; private set; }
+    public static event Action CanResetButtonsState;
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -54,6 +56,7 @@ public class DialogueManager : MonoBehaviour
 
         text = textPanel.GetComponentInChildren<Text>();
         textPanel.SetActive(false);
+        personNameText = personNameObj.GetComponentInChildren<Text>();
 
         learningText = learningPanel.GetComponentInChildren<Text>();
         learningPanel.SetActive(false);
@@ -143,6 +146,7 @@ public class DialogueManager : MonoBehaviour
                 string line = story.Continue().Trim();
                 float delay = 3f;
                 personNameText.text = "";
+                personNameObj.SetActive(false);
 
                 if (story.currentTags != null)
                 {
@@ -159,7 +163,10 @@ public class DialogueManager : MonoBehaviour
                             if (int.TryParse(tag.Substring("othersLine_".Length), out int index))
                             {
                                 if (othersNames.TryGetValue(index, out string name))
+                                {
                                     personNameText.text = name;
+                                    personNameObj.SetActive(true);
+                                }
                                 else
                                     personNameText.text = "???";
                             }
@@ -168,6 +175,7 @@ public class DialogueManager : MonoBehaviour
                 }
 
                 textPanel.SetActive(true);
+
                 text.text = line;
                 yield return WaitOrSkip(delay);
             } 
@@ -183,13 +191,14 @@ public class DialogueManager : MonoBehaviour
         yield return new WaitForSeconds(0.5f);
         textPanel.SetActive(false);
         isDialoguePlaying = false;
+        personNameObj.SetActive(false);
         canSkip = true;
     }
 
     private void DisplayChoices()
     {
         List<Choice> choices = story.currentChoices;
-
+        CanResetButtonsState?.Invoke();
         for (int i = 0; i < choiceButtons.Length; i++)
         {
             if (i < choices.Count)
@@ -201,12 +210,14 @@ public class DialogueManager : MonoBehaviour
                 choiceButtons[i].onClick.RemoveAllListeners();
                 choiceButtons[i].onClick.AddListener(() =>
                 {
+
                     foreach (var btn in choiceButtons)
                         btn.gameObject.SetActive(false);
 
                     // Показ выбора игрока на экране
                     text.color = girlColor;
                     personNameText.text = "";
+                    personNameObj.SetActive(false);
                     text.text = choices[choiceIndex].text.Trim();
 
                     story.ChooseChoiceIndex(choiceIndex);

@@ -72,8 +72,13 @@ public class Interactable : MonoBehaviour
     {
         return index;
     }
+    protected bool IsTableCameraActive()
+    {
+        return tableCamera != null && tableCamera.gameObject.activeInHierarchy;
+    }
     protected virtual void Update()
     {
+        if (!IsTableCameraActive()) return;
         // Всегда проверяем на наведение мыши, чтобы isMouseOver был актуальным
         HandleMouseInteraction();
 

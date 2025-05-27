@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using System.Collections;
 
 public class MainMenuButtonsManager : MonoBehaviour
 {
@@ -8,12 +9,15 @@ public class MainMenuButtonsManager : MonoBehaviour
     public Sprite inactiveSprite;           // Спрайт неактивной кнопки
     public Sprite hoverSprite;
 
+    public bool changeState = false;
+
     private int currentActiveChapterIndex = -1;
     private int? hoveredIndex = null;
 
     protected virtual void Awake()
     {
         buttons = GetComponentsInChildren<Button>();
+        DialogueManager.CanResetButtonsState += HandleResetButtons;
     }
 
     public void OnButtonClicked(int index)
@@ -55,5 +59,21 @@ public class MainMenuButtonsManager : MonoBehaviour
                 buttonImage.sprite = inactiveSprite;
             }
         }
+    }
+    void HandleResetButtons()
+    {
+        ResetButtons();
+    }
+    void ResetButtons()
+    {
+        foreach (var button in buttons)
+        {
+            Image buttonImage = button.GetComponent<Image>();
+            buttonImage.sprite = inactiveSprite;
+        }
+    }
+    private void OnDestroy()
+    {
+        DialogueManager.CanResetButtonsState -= HandleResetButtons;
     }
 }
