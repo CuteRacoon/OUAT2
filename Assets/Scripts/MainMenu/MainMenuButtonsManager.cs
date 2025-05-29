@@ -22,12 +22,27 @@ public class MainMenuButtonsManager : MonoBehaviour
 
     public void OnButtonClicked(int index)
     {
-        if (index == currentActiveChapterIndex) return;
+        if (index == currentActiveChapterIndex && !changeState)
+        {
+            return;
+        }
 
         currentActiveChapterIndex = index;
         hoveredIndex = null;
         UpdateButtonStates();
+
+        if (changeState)
+        {
+            StartCoroutine(ResetActiveStateAfterDelay(0.1f));
+        }
     }
+    private IEnumerator ResetActiveStateAfterDelay(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        currentActiveChapterIndex = -1;
+        UpdateButtonStates();
+    }
+
     public void OnPointerEnter(int index)
     {
         hoveredIndex = index;
