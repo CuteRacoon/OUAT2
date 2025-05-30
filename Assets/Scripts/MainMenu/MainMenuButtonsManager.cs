@@ -10,18 +10,34 @@ public class MainMenuButtonsManager : MonoBehaviour
     public Sprite hoverSprite;
 
     public bool changeState = false;
+    public bool isSwitcher = false;
 
     private int currentActiveChapterIndex = -1;
     private int? hoveredIndex = null;
+    private bool[] buttonStates; // Для хранения состояния каждой кнопки
 
     protected virtual void Awake()
     {
         buttons = GetComponentsInChildren<Button>();
+        buttonStates = new bool[buttons.Length];
         DialogueManager.CanResetButtonsState += HandleResetButtons;
     }
 
     public void OnButtonClicked(int index)
     {
+        // Обработка переключателя
+        if (isSwitcher)
+        {
+            // Переключаем состояние кнопки
+            buttonStates[index] = !buttonStates[index];
+
+            // Обновляем активный индекс (для совместимости с остальной логикой)
+            currentActiveChapterIndex = buttonStates[index] ? index : -1;
+
+            hoveredIndex = null;
+            UpdateButtonStates();
+            return;
+        }
         if (index == currentActiveChapterIndex && !changeState)
         {
             return;
@@ -40,6 +56,10 @@ public class MainMenuButtonsManager : MonoBehaviour
     {
         yield return new WaitForSeconds(delay);
         currentActiveChapterIndex = -1;
+        if (buttonStates != null && currentActiveChapterIndex >= 0 && currentActiveChapterIndex < buttonStates.Length)
+        {
+            buttonStates[currentActiveChapterIndex] = false;
+        }
         UpdateButtonStates();
     }
 
@@ -60,18 +80,15 @@ public class MainMenuButtonsManager : MonoBehaviour
         {
             Image buttonImage = buttons[i].GetComponent<Image>();
             if (buttonImage == null) continue;
+            bool isActive = isSwitcher ? buttonStates[i] : (i == currentActiveChapterIndex);
 
-            if (i == currentActiveChapterIndex)
-            {
-                buttonImage.sprite = activeSprite;
-            }
-            else if (hoveredIndex != null && i == hoveredIndex)
+            if (hoveredIndex != null && i == hoveredIndex)
             {
                 buttonImage.sprite = hoverSprite != null ? hoverSprite : activeSprite;
             }
             else
             {
-                buttonImage.sprite = inactiveSprite;
+                buttonImage.sprite = isActive ? activeSprite : inactiveSprite;
             }
         }
     }
@@ -81,11 +98,17 @@ public class MainMenuButtonsManager : MonoBehaviour
     }
     void ResetButtons()
     {
-        foreach (var button in buttons)
+        for (int i = 0; i < buttons.Length; i++)
         {
-            Image buttonImage = button.GetComponent<Image>();
-            buttonImage.sprite = inactiveSprite;
+            Image buttonImage = buttons[i].GetComponent<Image>();
+            if (buttonImage != null)
+                buttonImage.sprite = inactiveSprite;
+
+            if (buttonStates != null && i < buttonStates.Length)
+                buttonStates[i] = false;
         }
+        currentActiveChapterIndex = -1;
+        hoveredIndex = null;
     }
     private void OnDestroy()
     {
