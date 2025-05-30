@@ -10,8 +10,6 @@ public class Herbs : Interactable
     private Collider boxCollider;
 
     private int objectIndicator = 2;
-
-
     protected override void Start()
     {
         base.Start();

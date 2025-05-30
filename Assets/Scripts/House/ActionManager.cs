@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Rendering;
 using UnityEngine.UI;
 using UnityEngine.Video;
 
@@ -136,10 +137,36 @@ public class ActionManager : MonoBehaviour
         yield return new WaitForSeconds(0.5f);
         //Debug.Log("Запускаю кат-сцену с братом");
         cutScene.gameObject.SetActive(true);
+        dialogueController.PlayPartOfPlot("cut_scene");
         // Ждём, пока видео не закончится
-        yield return new WaitForSeconds(22f);
+        yield return new WaitForSeconds(70f);
         cameraBehaviour.SwitchCamera(0);
         interactionController.ResetInteraction();
         cutScene.gameObject.SetActive(false);
+        dialogueController.HideAllPanels();
+    }
+    public void TestCutScene()
+    {
+        StartCoroutine(TestCutSceneCoroutine());
+    }
+    private IEnumerator TestCutSceneCoroutine()
+    {
+        Camera camera = cameraBehaviour.GetCurrentCamera();
+        var volume = camera.GetComponent<Volume>();
+
+        yield return new WaitForSeconds(1f);
+        if (volume != null)
+        {
+            volume.enabled = true;
+        }
+        cutScene.gameObject.SetActive(true);
+        dialogueController.PlayPartOfPlot("cut_scene");
+        // Ждём, пока видео не закончится
+        yield return new WaitForSeconds(70f);
+        cameraBehaviour.SwitchCamera(0);
+        interactionController.ResetInteraction();
+        cutScene.gameObject.SetActive(false);
+        dialogueController.HideAllPanels();
+        volume.enabled = false;
     }
 }
