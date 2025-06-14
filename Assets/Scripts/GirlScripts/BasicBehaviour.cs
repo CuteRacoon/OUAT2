@@ -62,9 +62,6 @@ public class BasicBehaviour : MonoBehaviour
         vFloat = Animator.StringToHash("V");
         camScript = playerCamera.GetComponent<ThirdPersonOrbitCamBasic>();
         rBody = GetComponent<Rigidbody>();
-
-        // Grounded verification variables.
-        groundedBool = Animator.StringToHash("Grounded");
         colExtents = GetComponent<Collider>().bounds.extents;
     }
     public PlayerController GetPlayerController()
@@ -117,8 +114,6 @@ public class BasicBehaviour : MonoBehaviour
             camScript.ResetFOV();
             changedFOV = false;
         }
-        // Set the grounded test on the Animator Controller.
-        anim.SetBool(groundedBool, IsGrounded());
     }
     public void StartGirlInMonsterSceneAnimation(float hValue, float vValue)
     {
@@ -126,8 +121,6 @@ public class BasicBehaviour : MonoBehaviour
         cutsceneH = hValue;
         cutsceneV = vValue;
         LockTempBehaviour(this.behaviourCode); // Use this.behaviourCode instead of GetHashCode()
-        //anim.applyRootMotion = false;
-        //anim.CrossFade("GirlInMonsterSceneAnimation", 0.2f);
     }
 
     public void EndGirlInMonsterSceneAnimation()
@@ -308,10 +301,6 @@ public class BasicBehaviour : MonoBehaviour
             behaviourLocked = 0;
         }
     }
-
-    // Common functions to any behaviour:
-
-    // Check if player is sprinting.
     public virtual bool IsSprinting()
     {
         return sprint && IsMoving() && CanSprint();
@@ -367,13 +356,6 @@ public class BasicBehaviour : MonoBehaviour
             Quaternion newRotation = Quaternion.Slerp(rBody.rotation, targetRotation, turnSmoothing);
             rBody.MoveRotation(newRotation);
         }
-    }
-
-    // Function to tell whether or not the player is on ground.
-    public bool IsGrounded()
-    {
-        Ray ray = new Ray(this.transform.position + Vector3.up * (2 * colExtents.x), Vector3.down);
-        return Physics.SphereCast(ray, colExtents.x, colExtents.x + 0.2f);
     }
 }
 

@@ -135,15 +135,7 @@ public class ActionManager : MonoBehaviour
         dialogueController.HideAllPanels();
         endPotion.SetActive(false);
         yield return new WaitForSeconds(0.5f);
-        //Debug.Log("Запускаю кат-сцену с братом");
-        cutScene.gameObject.SetActive(true);
-        dialogueController.PlayPartOfPlot("cut_scene");
-        // Ждём, пока видео не закончится
-        yield return new WaitForSeconds(70f);
-        cameraBehaviour.SwitchCamera(0);
-        interactionController.ResetInteraction();
-        cutScene.gameObject.SetActive(false);
-        dialogueController.HideAllPanels();
+        TestCutScene();
     }
     public void TestCutScene()
     {
@@ -154,6 +146,7 @@ public class ActionManager : MonoBehaviour
         Camera camera = cameraBehaviour.GetCurrentCamera();
         var volume = camera.GetComponent<Volume>();
 
+        InteractionManager.Instance.SetInputLocked(true);
         yield return new WaitForSeconds(1f);
         if (volume != null)
         {
@@ -163,6 +156,7 @@ public class ActionManager : MonoBehaviour
         dialogueController.PlayPartOfPlot("cut_scene");
         // Ждём, пока видео не закончится
         yield return new WaitForSeconds(70f);
+        InteractionManager.Instance.SetInputLocked(false);
         cameraBehaviour.SwitchCamera(0);
         interactionController.ResetInteraction();
         cutScene.gameObject.SetActive(false);

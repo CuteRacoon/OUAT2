@@ -28,6 +28,7 @@ public class InteractionManager : MonoBehaviour
     public bool playerInside = false;
     private bool somethingChanging = false;
     private bool inProcess = false;
+    private bool inputLocked = false;
 
     private bool learningCompleted = false;
     private bool showingLearningPanel = false;
@@ -44,6 +45,10 @@ public class InteractionManager : MonoBehaviour
             return;
         }
         Instance = this;
+    }
+    public void SetInputLocked(bool isLocked)
+    {
+        inputLocked = isLocked;
     }
     void Start()
     {
@@ -139,6 +144,7 @@ public class InteractionManager : MonoBehaviour
 
     void Update()
     {
+        if (inputLocked) return;
         if (activeIndex >= 0)
         {
             playerInside = playerController.GetPlayerInside();

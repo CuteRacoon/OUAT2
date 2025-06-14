@@ -31,10 +31,13 @@ public class PlayerController : MonoBehaviour
     public void SetMovement(bool state)
     {
         canMove = state;
-        animator.applyRootMotion = state; // Инвертируем состояние
-        animator.enabled = state;
+        //аnimator.applyRootMotion = state; // Инвертируем состояние
+        //animator.enabled = state;
+
+        PlayerAnimatorController animControl = GetComponent<PlayerAnimatorController>();
+        if (!state) animControl.SetIdleState();
         gameObject.GetComponent<BasicBehaviour>().enabled = state;
-        gameObject.SetActive(state);
+        //gameObject.SetActive(state);
     }
     public void SetTransform(Transform trans)
     {
