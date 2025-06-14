@@ -14,6 +14,7 @@ Material:
   m_ValidKeywords:
   - _METALLICSPECGLOSSMAP
   - _NORMALMAP
+  - _RECEIVE_SHADOWS_OFF
   m_InvalidKeywords: []
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
@@ -28,7 +29,8 @@ Material:
     serializedVersion: 3
     m_TexEnvs: []
     m_Ints: []
-    m_Floats: []
+    m_Floats:
+    - _ReceiveShadows: 0
     m_Colors:
     - _BaseColor: {r: 0.6528301, g: 0.05789245, b: 0.17781973, a: 1}
     - _Color: {r: 0.6528301, g: 0.057892427, b: 0.1778197, a: 1}
