@@ -95,7 +95,7 @@ public class MoveBehaviour : GenericBehaviour
         }
 
         // Lerp current direction to calculated target direction.
-        if ((behaviourManager.IsMoving() && targetDirection != Vector3.zero))
+        if ((behaviourManager.IsMoving() && targetDirection != Vector3.zero && !behaviourManager.GetPlayerController().IsPositionLocked()))
         {
             Quaternion targetRotation = Quaternion.LookRotation(targetDirection);
 

@@ -31,6 +31,8 @@ public class BasicBehaviour : MonoBehaviour
     private float lockStartTime;
     private const float maxLockDuration = 2f;
 
+    private bool inputLocked = false;  // Новый флаг
+
     // Catscene variables
     private bool inCutscene = false;
     private float cutsceneH;
@@ -39,6 +41,7 @@ public class BasicBehaviour : MonoBehaviour
     // Get current horizontal and vertical axes.
     public float GetH => h;
     public float GetV => v;
+    public bool InCutscene => inCutscene;
 
     // Get the player camera script.
     public ThirdPersonOrbitCamBasic GetCamScript => camScript;
@@ -301,6 +304,17 @@ public class BasicBehaviour : MonoBehaviour
             behaviourLocked = 0;
         }
     }
+    public void SetSprintAllowed(bool state)
+    {
+        foreach (GenericBehaviour behaviour in behaviours)
+        {
+            behaviour.SetCanSprint(state);
+        }
+        foreach (GenericBehaviour behaviour in overridingBehaviours)
+        {
+            behaviour.SetCanSprint(state);
+        }
+    }
     public virtual bool IsSprinting()
     {
         return sprint && IsMoving() && CanSprint();
@@ -357,6 +371,24 @@ public class BasicBehaviour : MonoBehaviour
             rBody.MoveRotation(newRotation);
         }
     }
+    // Function to tell whether or not the player is on ground.
+    public bool IsGrounded()
+    {
+        Ray ray = new Ray(this.transform.position + Vector3.up * (2 * colExtents.x), Vector3.down);
+        return Physics.SphereCast(ray, colExtents.x, colExtents.x + 0.2f);
+    }
+    public void DisablePlayerControl()
+    {
+        inputLocked = true;
+        h = 0;
+        v = 0;
+        anim.SetFloat(hFloat, 0);
+        anim.SetFloat(vFloat, 0);
+    }
+    public void EnablePlayerControl()
+    {
+        inputLocked = false;
+    }
 }
 
 // This is the base class for all player behaviours, any custom behaviour must inherit from this.
@@ -395,7 +427,10 @@ public abstract class GenericBehaviour : MonoBehaviour
     {
         return behaviourCode;
     }
-
+    public void SetCanSprint(bool value)
+    {
+        canSprint = value;
+    }
     // Check if the behaviour allows sprinting.
     public bool AllowSprint()
     {

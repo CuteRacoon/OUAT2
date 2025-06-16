@@ -8,6 +8,7 @@ public class CameraFollowScript : MonoBehaviour
     private float lastPlayerX;
     private float zOffset;
     private float xOffset;
+    private float yOffset;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -17,19 +18,20 @@ public class CameraFollowScript : MonoBehaviour
     {
         if (player == null) return; // ¬ыходим, если игрок не найден
         float playerX = player.position.x;
+        float playerY = player.position.y;
 
-        // ƒвигаем камеру только если игрок двигаетс€ вперед
+        /*// ƒвигаем камеру только если игрок двигаетс€ вперед
         if (playerX > lastPlayerX)
-        {
-            // ÷елева€ позици€ камеры (совпадает с X координатой игрока, остальное без изменений)
-            Vector3 targetPosition = new Vector3(playerX+ xOffset, transform.position.y, player.position.z + zOffset);
+        {*/
+        // ÷елева€ позици€ камеры (совпадает с X координатой игрока, остальное без изменений)
+        Vector3 targetPosition = new Vector3(playerX+ xOffset, playerY + yOffset, player.position.z + zOffset);
 
             // ѕлавное перемещение камеры к целевой позиции
-            //transform.position = Vector3.Lerp(transform.position, targetPosition, Time.deltaTime);
-            transform.position = targetPosition;
+            transform.position = Vector3.Lerp(transform.position, targetPosition, 0.2f);
+            //transform.position = targetPosition;
             // «апоминаем текущую координату X игрока
             lastPlayerX = playerX;
-        }
+        //}
     }
     private void InitializePlayerPosition()
     {
@@ -47,6 +49,7 @@ public class CameraFollowScript : MonoBehaviour
         lastPlayerX = player.position.x; // »нициализируем стартовой позицией игрока
         zOffset = transform.position.z - player.position.z;
         xOffset = transform.position.x - player.position.x;
+        yOffset = transform.position.y - player.position.y;
     }
     public void SetTargetPosition()
     {
