@@ -87,8 +87,10 @@ public class LampScript : MonoBehaviour
             yield break;
         }
         isLampOn = !isLampOn;
+        PlayerAnimatorController.Instance.PlayLampAnimation(isLampOn);
         if (isLampOn)
         {
+            yield return new WaitForSeconds(3f);
             GameEvents.RaiseLampStateChanging();
         }
 
@@ -100,10 +102,10 @@ public class LampScript : MonoBehaviour
 
         float timer = 0f;
 
-        if (isLampOn)
+        /*if (isLampOn)
         {
             lampObject.SetActive(true); // Включаем сразу
-        }
+        }*/
 
         // Плавное изменение яркости
         while (timer < fadeDuration)
@@ -121,7 +123,7 @@ public class LampScript : MonoBehaviour
         // Если выключаем — задержка и деактивация объекта
         if (!isLampOn)
         {
-            lampObject.SetActive(false);
+            //lampObject.SetActive(false);
             GameEvents.RaiseLampStateChanging();
         }
     }
