@@ -55,8 +55,9 @@ public class RunAwayController : MonoBehaviour
         ForestCameraManager.Instance.SwitchToRunAwayCamera();
         followCamera = ForestCameraManager.Instance.GetCurrentCamera();
         followCamera.GetComponent<RunAwayCameraFollow>().SetChaseMode(true);
-       // followCamera.GetComponent<RunAwayCameraFollow>().SetChaseSpeed(7f);
-        PlayerController.Instance.SetNewMovementSpeeds(0.7f, 0.7f, 1.3f);
+        GameEvents.RaiseStartChasing();
+        // followCamera.GetComponent<RunAwayCameraFollow>().SetChaseSpeed(7f);
+        PlayerController.Instance.SetNewMovementSpeeds(4f, 4f, 5.5f);
         barScript.SetShiftBlocked(false);
         barScript.EnableBar();
     }

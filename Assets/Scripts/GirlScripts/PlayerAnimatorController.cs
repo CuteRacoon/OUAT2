@@ -9,6 +9,8 @@ public class PlayerAnimatorController : MonoBehaviour
     private bool isHoldingLamp = false;
     public static PlayerAnimatorController Instance { get; private set; }
 
+    private bool isChasingMode = false;
+
     void Update()
     {
         HandleMovementInput();
@@ -23,6 +25,16 @@ public class PlayerAnimatorController : MonoBehaviour
             return;
         }
         Instance = this;
+        GameEvents.StartChasing += HandleChasingStart;
+        GameEvents.StopChasing += HandleChasingStop;
+    }
+    void HandleChasingStart()
+    {
+        isChasingMode = true;
+    }
+    void HandleChasingStop()
+    {
+        isChasingMode = false;
     }
     void HandleMovementInput()
     {
@@ -31,11 +43,17 @@ public class PlayerAnimatorController : MonoBehaviour
         Vector3 inputDirection = new Vector3(horizontal, 0f, vertical).normalized;
 
         bool isMoving = inputDirection.magnitude >= 0.1f;
-        bool isRunning = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
 
-        // Анимация
+        bool isRunning = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
+        if (isChasingMode)
+        {
+            isRunning = true;
+        }
+
+        // Передаём все флаги в аниматор
         animator.SetBool("Walking", isMoving && !isRunning);
         animator.SetBool("Running", isMoving && isRunning);
+        animator.SetBool("Chasing", isChasingMode);
     }
 
     public void PlayLampAnimation(bool state)

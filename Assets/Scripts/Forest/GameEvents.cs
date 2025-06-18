@@ -8,6 +8,8 @@ public static class GameEvents
     public static event Action BarIsNull;
     public static event Action NeedToStopSprint;
     public static event Action NeedToStartSprint;
+    public static event Action StartChasing;
+    public static event Action StopChasing;
 
     public static void RaiseCanDisplayLampBar() => CanDisplayLampBar?.Invoke();
     public static void RaiseCannotDisplayLampBar() => CannotDisplayLampBar?.Invoke();
@@ -16,4 +18,6 @@ public static class GameEvents
 
     public static void RaiseNeedToStopSprint() => NeedToStopSprint?.Invoke();
     public static void RaiseNeedToStartSprint() => NeedToStartSprint?.Invoke();
+    public static void RaiseStartChasing() => StartChasing?.Invoke();
+    public static void RaiseStopChasing() => StopChasing?.Invoke();
 }

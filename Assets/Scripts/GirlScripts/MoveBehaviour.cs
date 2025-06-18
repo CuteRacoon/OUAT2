@@ -16,15 +16,26 @@ public class MoveBehaviour : GenericBehaviour
     public float sprintMultiplier = 0.8f;
     private float speedMultiplier = 1.0f;
 
+    private bool isChasingMode = false;
+
     // Start is always called after any Awake functions.
     void Start()
-    { 
+    {
+        GameEvents.StartChasing += HandleChasingStart;
+        GameEvents.StopChasing += HandleChasingStop;
         // Subscribe and register this behaviour as the default behaviour.
         behaviourManager.SubscribeBehaviour(this);
         behaviourManager.RegisterDefaultBehaviour(this.behaviourCode);
         StartCoroutine(SpeedsAnimeCoroutine());
     }
-
+    void HandleChasingStart()
+    {
+        isChasingMode = true;
+    }
+    void HandleChasingStop()
+    {
+        isChasingMode = false;
+    }
     IEnumerator SpeedsAnimeCoroutine()
     {
         yield return null;
@@ -53,9 +64,17 @@ public class MoveBehaviour : GenericBehaviour
 
         Vector2 inputDir = new Vector2(horizontal, vertical);
         float inputMagnitude = Vector2.ClampMagnitude(inputDir, 1f).magnitude;
+        float targetSpeed;
 
-        // Целевая скорость: run или sprint
-        float targetSpeed = behaviourManager.IsSprinting() ? sprintSpeed : (runSpeed * speedMultiplier);
+        // В режиме погони игрок "бежит" даже без шифта
+        if (isChasingMode)
+        {
+            targetSpeed = behaviourManager.IsSprinting() ? sprintSpeed : walkSpeed;
+        }
+        else
+        {
+            targetSpeed = behaviourManager.IsSprinting() ? sprintSpeed : (runSpeed * speedMultiplier);
+        }
 
         // Плавная интерполяция скорости: Lerp от текущей к целевой
         float desiredSpeed = inputMagnitude * targetSpeed;
@@ -70,7 +89,7 @@ public class MoveBehaviour : GenericBehaviour
         }
 
         // Передача параметра в аниматор
-        behaviourManager.GetAnim.SetFloat(speedFloat, speed, speedDampTime, Time.deltaTime);
+        //behaviourManager.GetAnim.SetFloat(speedFloat, speed, speedDampTime, Time.deltaTime);
     }
 
 
