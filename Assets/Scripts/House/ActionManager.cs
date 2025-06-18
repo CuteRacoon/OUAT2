@@ -1,9 +1,8 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.UI;
-using UnityEngine.Video;
+using UnityEngine.SceneManagement;
 
 public class ActionManager : MonoBehaviour
 {
@@ -37,6 +36,7 @@ public class ActionManager : MonoBehaviour
         cutScene.gameObject.SetActive(false);
         lights[0].SetActive(true);
         lights[1].SetActive(false);
+
         // При билде раскомментить
         //gameCanvas.SetActive(false);
         //prehistoryCanvas.SetActive(true);
@@ -183,20 +183,40 @@ public class ActionManager : MonoBehaviour
         yield return new WaitUntil(() => !bakeCameraAnime.isPlaying);
         yield return null;
         bakeCameraAnime.Play("BakeCamera2");
-        yield return new WaitForSeconds(3f);
-        bakeCameraAnime.Stop();
         DialogueManager.Instance.PlayPartOfPlot("girl_thoughts");
         while (DialogueManager.Instance.IsDialoguePlaying)
         {
             yield return null;
         }
+        bakeCameraAnime.Stop();
 
-        InteractionManager.Instance.SetInputLocked(false);
+        // Плавное увеличение интенсивности Volume
+        Volume volume = camera.GetComponent<Volume>();
+        volume.enabled = true;
+        if (volume != null)
+        {
+            float duration = 2f;
+            float elapsed = 0f;
+            volume.weight = 0f;
+
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                volume.weight = Mathf.Clamp01(elapsed / duration);
+                yield return null;
+            }
+
+            volume.weight = 1f; // Убедимся, что точно 1
+        }
+        SceneManager.LoadScene("Forest");
+
+        // РАСКОММИТИТЬ ДЛЯ ПОИСКА ЛАМПЫ
+        /*InteractionManager.Instance.SetInputLocked(false);
         PlayerAnimatorController.Instance.SetHandAnimate(false);
         PlayerController.Instance.SetActiveObjectInHands(false);
         cameraBehaviour.SwitchCamera(0);
         interactionController.ResetInteraction();
-        dialogueController.HideAllPanels();
+        dialogueController.HideAllPanels();*/
     }
     public void PlayBakeCameraAnimation()
     {

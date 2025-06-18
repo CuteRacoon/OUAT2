@@ -12,7 +12,7 @@ public class PlayerAnimatorController : MonoBehaviour
     void Update()
     {
         HandleMovementInput();
-        HandleLampInput();
+        //HandleLampInput();
     }
     private void Awake()
     {
@@ -38,23 +38,20 @@ public class PlayerAnimatorController : MonoBehaviour
         animator.SetBool("Running", isMoving && isRunning);
     }
 
-    void HandleLampInput()
+    public void PlayLampAnimation(bool state)
     {
-        if (Input.GetKeyDown(KeyCode.F))
-        {
-            isHoldingLamp = !isHoldingLamp;
+         isHoldingLamp = state;
 
-            if (isHoldingLamp)
-            {
-                animator.SetTrigger("Lighting");
-                animator.SetBool("Holding", true);
-            }
-            else
-            {
-                animator.SetTrigger("Unlighting");
-                animator.SetBool("Holding", false);
-            }
-        }
+         if (isHoldingLamp)
+         {
+            animator.SetTrigger("Lighting");
+            animator.SetBool("Holding", true);
+         }
+         else
+         {
+            animator.SetTrigger("Unlighting");
+            animator.SetBool("Holding", false);
+         }
     }
     public void SetHandAnimate(bool state)
     {

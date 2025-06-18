@@ -8,6 +8,7 @@ public class PlayerController : MonoBehaviour
     private bool canMove = true;
     private bool playerInsideOfTrigger = false;
     private bool isPositionLocked = false;
+    private GameObject girlObject = null;
 
     [SerializeField] GameObject objectInHand;
 
@@ -50,6 +51,7 @@ public class PlayerController : MonoBehaviour
         Instance = this;
         basicBehaviour = gameObject.GetComponent<BasicBehaviour>();
         moveBehaviour = gameObject.GetComponent<MoveBehaviour>();
+        girlObject = transform.childCount > 0 ? transform.GetChild(0).gameObject : null;
     }
     private void HandleSprintStop()
     {
@@ -79,6 +81,10 @@ public class PlayerController : MonoBehaviour
     }
     public void SetMovement(bool state)
     {
+        if (girlObject != null)
+        {
+            girlObject.SetActive(state);
+        }
         canMove = state;
         //аnimator.applyRootMotion = state; // Инвертируем состояние
         //animator.enabled = state;

@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 4315980523062395598}
   - component: {fileID: 3008566570830662727}
   m_Layer: 0
-  m_Name: ReadyPtion
+  m_Name: ReadyPotion
   m_TagString: bowl
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -27,7 +27,7 @@ Transform:
   m_GameObject: {fileID: 3772596058081262}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0.8788514, z: -0, w: 0.47709566}
-  m_LocalPosition: {x: -0.471, y: 2.963, z: 0.845}
+  m_LocalPosition: {x: -0.377, y: 2.859, z: 0.838}
   m_LocalScale: {x: 1.223672, y: 0.69924176, z: 1.223672}
   m_ConstrainProportionsScale: 1
   m_Children:
@@ -52,7 +52,7 @@ BoxCollider:
   m_LayerOverridePriority: 0
   m_IsTrigger: 1
   m_ProvidesContacts: 0
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 3
   m_Size: {x: 0.65911555, y: 0.3395427, z: 0.6795151}
   m_Center: {x: 0.0014177561, y: -0.080442935, z: 0.0042330027}
@@ -6343,7 +6343,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5969309523390132660}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: 0.8788514, z: -0, w: 0.47709566}
+  m_LocalRotation: {x: 0, y: 0.87885046, z: 0, w: 0.4770974}
   m_LocalPosition: {x: -9.474, y: -1.98, z: -8.064}
   m_LocalScale: {x: 1.1856278, y: 1.1856272, z: 1.1856278}
   m_ConstrainProportionsScale: 0
@@ -6468,6 +6468,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7561295afbc1c0b42ace42e791a99eef, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  objectInHand: {fileID: 3772596058081262}
 --- !u!114 &3129613704936997435
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7417,7 +7418,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6517727145063288515}
   m_Layer: 0
-  m_Name: GameObject
+  m_Name: GirlBody
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
