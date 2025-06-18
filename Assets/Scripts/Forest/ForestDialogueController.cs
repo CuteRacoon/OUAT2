@@ -9,9 +9,6 @@ public class ForestDialogueController : MonoBehaviour
     private Canvas canvas;
     private GameObject[] lightObjects;
 
-    public Material bakeEyesMaterial;
-    private Coroutine emissionCoroutine;
-
     private bool playerInsideTrigger = false;
     private int currentTriggerIndex = -1;
     private bool dialogueInProcess = false;
@@ -23,16 +20,6 @@ public class ForestDialogueController : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        // ”станавливаем начальное состо€ние материала (остывша€ печка)
-        if (bakeEyesMaterial != null)
-        {
-            Color baseColor = new Color(186f / 255f, 186f / 255f, 186f / 255f); // RGB (186,186,186)
-            //bakeEyesMaterial.color = baseColor;
-
-            bakeEyesMaterial.EnableKeyword("_EMISSION");
-            bakeEyesMaterial.SetColor("_EmissionColor", baseColor); // 0 эмиссии = остывшее состо€ние
-        }
-
         dialogueManager = FindAnyObjectByType<DialogueManager>();
         DialogueTrigger.OnDialogueTriggerEnter += OnPlayerEnterDialogueZone;
         DialogueTrigger.OnDialogueTriggerExit += OnPlayerExitDialogueZone;
@@ -83,10 +70,6 @@ public class ForestDialogueController : MonoBehaviour
         canvas.gameObject.SetActive(true);
 
         StartCoroutine(FadeLightsForTrigger(currentTriggerIndex, 2f, true)); // ѕлавно включаем
-
-        // ѕлавное нарастание Emission от белого до €рко-красного
-        if (emissionCoroutine != null) StopCoroutine(emissionCoroutine);
-        emissionCoroutine = StartCoroutine(FadeEmissionColor(bakeEyesMaterial, Color.white, Color.red * 5f, 2f));
     }
     private void OnPlayerExitDialogueZone(DialogueTrigger currentTrigger)
     {
@@ -101,29 +84,7 @@ public class ForestDialogueController : MonoBehaviour
         dialogueInProcess = false;
         StartCoroutine(FadeLightsForTrigger(currentTriggerIndex, 2f, false));
         currentTriggerIndex = -1;
-
-        // ѕлавное снижение Emission от €рко-красного к белому
-        if (emissionCoroutine != null) StopCoroutine(emissionCoroutine);
-        emissionCoroutine = StartCoroutine(FadeEmissionColor(bakeEyesMaterial, Color.red * 5f, Color.white, 2f));
     }
-    private IEnumerator FadeEmissionColor(Material mat, Color fromColor, Color toColor, float duration)
-    {
-        float timer = 0f;
-
-        mat.EnableKeyword("_EMISSION");
-
-        while (timer < duration)
-        {
-            timer += Time.deltaTime;
-            float t = Mathf.Clamp01(timer / duration);
-            Color currentColor = Color.Lerp(fromColor, toColor, t);
-            mat.SetColor("_EmissionColor", currentColor);
-            yield return null;
-        }
-
-        mat.SetColor("_EmissionColor", toColor); // √арантируем финал
-    }
-
     // Update is called once per frame
     void Update()
     {
