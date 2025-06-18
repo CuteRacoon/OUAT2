@@ -9,6 +9,8 @@ public class PlayerController : MonoBehaviour
     private bool playerInsideOfTrigger = false;
     private bool isPositionLocked = false;
 
+    [SerializeField] GameObject objectInHand;
+
     public static PlayerController Instance { get; private set; }
     private void OnEnable()
     {
@@ -24,6 +26,13 @@ public class PlayerController : MonoBehaviour
             Rigidbody rb = GetComponent<Rigidbody>();
             rb.rotation = Quaternion.LookRotation(rb.transform.forward); // зафиксировать текущий поворот
             rb.angularVelocity = Vector3.zero; // остановить вращение
+        }
+    }
+    public void SetActiveObjectInHands(bool state)
+    {
+        if (objectInHand != null)
+        {
+            objectInHand.SetActive(state);
         }
     }
     public bool IsPositionLocked()

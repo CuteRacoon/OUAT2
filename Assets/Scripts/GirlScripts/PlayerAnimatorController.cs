@@ -7,13 +7,23 @@ public class PlayerAnimatorController : MonoBehaviour
     public Camera playerCamera;  // Камеру задаём в инспекторе
 
     private bool isHoldingLamp = false;
+    public static PlayerAnimatorController Instance { get; private set; }
 
     void Update()
     {
         HandleMovementInput();
         HandleLampInput();
     }
-
+    private void Awake()
+    {
+        // Singleton
+        if (Instance != null && Instance != this)
+        {
+            Destroy(this.gameObject);
+            return;
+        }
+        Instance = this;
+    }
     void HandleMovementInput()
     {
         float horizontal = Input.GetAxis("Horizontal"); // A/D или стрелки
@@ -44,6 +54,17 @@ public class PlayerAnimatorController : MonoBehaviour
                 animator.SetTrigger("Unlighting");
                 animator.SetBool("Holding", false);
             }
+        }
+    }
+    public void SetHandAnimate(bool state)
+    {
+        if (state)
+        {
+            animator.SetBool("Holding", true);
+        }
+        else
+        {
+            animator.SetBool("Holding", false);
         }
     }
     public void SetIdleState()

@@ -94,6 +94,17 @@ public class InteractionManager : MonoBehaviour
             Debug.LogWarning("Индекс триггера вне диапазона: " + index);
         }
     }
+    public void SetCanInteractOfTriggerByIndex(int index, bool state)
+    {
+        if (index >= 0 && index < triggerControllers.Length)
+        {
+            triggerControllers[index].canInteract = state;
+        }
+        else
+        {
+            Debug.LogWarning("Индекс триггера вне диапазона: " + index);
+        }
+    }
 
     public void SetActiveTrigger(int index)
     {
@@ -223,6 +234,21 @@ public class InteractionManager : MonoBehaviour
             }
             windowDialogueCoroutine = StartCoroutine(HandleWindowInteraction());
         }
+        if (cameraAndTriggerIndex == 3)
+        {
+            StartCoroutine(BrotherPotionCoroutine());
+        } 
+    }
+    private IEnumerator BrotherPotionCoroutine()
+    {
+        dialogueController.PlayPartOfPlot("brother_potion");
+        while (dialogueController.IsDialoguePlaying)
+        {
+            yield return null;
+        }
+        yield return new WaitForSeconds(1f);
+        ActionManager.Instance.StartCutScene();
+        yield return null;
     }
     private IEnumerator StartExitCoroutine(string text)
     {

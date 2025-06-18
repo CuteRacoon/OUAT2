@@ -15,6 +15,7 @@ public class ActionManager : MonoBehaviour
     [SerializeField] private GameObject prehistoryCanvas;
     [SerializeField] private GameObject endPotion;
     [SerializeField] private GameObject cutScene;
+    [SerializeField] private GameObject[] lights = new GameObject[2];
     public static ActionManager Instance { get; private set; }
     private void Awake()
     {
@@ -34,6 +35,8 @@ public class ActionManager : MonoBehaviour
         interactionController = FindAnyObjectByType<InteractionManager>();
 
         cutScene.gameObject.SetActive(false);
+        lights[0].SetActive(true);
+        lights[1].SetActive(false);
         // При билде раскомментить
         //gameCanvas.SetActive(false);
         //prehistoryCanvas.SetActive(true);
@@ -88,6 +91,7 @@ public class ActionManager : MonoBehaviour
 
         interactionController.ResetInteraction();
         interactionController.DisableTriggerByIndex(2);
+        interactionController.SetCanInteractOfTriggerByIndex(2, false);
 
         StartCoroutine(showFirstLearningPhrase());
     }
@@ -121,9 +125,9 @@ public class ActionManager : MonoBehaviour
     }
     public void StartPotionCutScene()
     {
-        StartCoroutine(PotionCutScene());
+        StartCoroutine(PotionGetting());
     }
-    private IEnumerator PotionCutScene()
+    private IEnumerator PotionGetting()
     {
         dialogueController.LearningPanelText("Нажмите Q, чтобы взять зелье в руки");
         bool clicked = false;
@@ -132,22 +136,30 @@ public class ActionManager : MonoBehaviour
             if (Input.GetKeyDown(KeyCode.Q)) clicked = true;
             yield return null;
         }
+        PlayerAnimatorController.Instance.SetHandAnimate(true);
         dialogueController.HideAllPanels();
         endPotion.SetActive(false);
-        yield return new WaitForSeconds(0.5f);
-        TestCutScene();
+        yield return new WaitForSeconds(1f);
+        cameraBehaviour.SwitchCamera(0);
+        PlayerController.Instance.SetActiveObjectInHands(true);
+        //TestCutScene();
+        interactionController.ResetInteraction();
+        interactionController.SetCanInteractOfTriggerByIndex(2, true);
+        interactionController.SetCanInteractOfTriggerByIndex(0, false);
+        interactionController.SetCanInteractOfTriggerByIndex(1, false);
     }
-    public void TestCutScene()
+    public void StartCutScene()
     {
         StartCoroutine(TestCutSceneCoroutine());
     }
     private IEnumerator TestCutSceneCoroutine()
     {
+        cameraBehaviour.SwitchCamera(0);
+        yield return null;
         Camera camera = cameraBehaviour.GetCurrentCamera();
         var volume = camera.GetComponent<Volume>();
 
         InteractionManager.Instance.SetInputLocked(true);
-        yield return new WaitForSeconds(1f);
         if (volume != null)
         {
             volume.enabled = true;
@@ -156,11 +168,38 @@ public class ActionManager : MonoBehaviour
         dialogueController.PlayPartOfPlot("cut_scene");
         // Ждём, пока видео не закончится
         yield return new WaitForSeconds(70f);
+        cutScene.gameObject.SetActive(false);
+
+        StartCoroutine(BakeCameraAnimation());
+    }
+    private IEnumerator BakeCameraAnimation()
+    {
+        lights[1].SetActive(true);
+        lights[0].SetActive(false);
+        cameraBehaviour.SwitchCamera(3);
+        Camera camera = cameraBehaviour.GetCurrentCamera();
+        Animation bakeCameraAnime = camera.GetComponent<Animation>();
+        bakeCameraAnime.Play("BakeCamera");
+        yield return new WaitUntil(() => !bakeCameraAnime.isPlaying);
+        yield return null;
+        bakeCameraAnime.Play("BakeCamera2");
+        yield return new WaitForSeconds(3f);
+        bakeCameraAnime.Stop();
+        DialogueManager.Instance.PlayPartOfPlot("girl_thoughts");
+        while (DialogueManager.Instance.IsDialoguePlaying)
+        {
+            yield return null;
+        }
+
         InteractionManager.Instance.SetInputLocked(false);
+        PlayerAnimatorController.Instance.SetHandAnimate(false);
+        PlayerController.Instance.SetActiveObjectInHands(false);
         cameraBehaviour.SwitchCamera(0);
         interactionController.ResetInteraction();
-        cutScene.gameObject.SetActive(false);
         dialogueController.HideAllPanels();
-        volume.enabled = false;
+    }
+    public void PlayBakeCameraAnimation()
+    {
+        StartCoroutine(BakeCameraAnimation());
     }
 }
