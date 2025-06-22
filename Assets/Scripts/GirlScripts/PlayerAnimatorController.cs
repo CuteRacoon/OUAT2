@@ -10,14 +10,19 @@ public class PlayerAnimatorController : MonoBehaviour
     public static PlayerAnimatorController Instance { get; private set; }
 
     private bool isChasingMode = false;
+    private BasicBehaviour basicManager;
+
+    private bool isAutoMoving = false;
 
     void Update()
     {
-        HandleMovementInput();
+        if (!basicManager.IsInputLocked)
+            HandleMovementInput();
         //HandleLampInput();
     }
     private void Awake()
     {
+        basicManager = gameObject.GetComponent<BasicBehaviour>();
         // Singleton
         if (Instance != null && Instance != this)
         {
@@ -38,6 +43,12 @@ public class PlayerAnimatorController : MonoBehaviour
     }
     void HandleMovementInput()
     {
+        if (isAutoMoving)
+        {
+            animator.SetBool("Walking", true);
+            animator.SetBool("Running", false);
+            return;
+        }
         float horizontal = Input.GetAxis("Horizontal"); // A/D или стрелки
         float vertical = Input.GetAxis("Vertical");     // W/S или стрелки
         Vector3 inputDirection = new Vector3(horizontal, 0f, vertical).normalized;
@@ -86,5 +97,17 @@ public class PlayerAnimatorController : MonoBehaviour
     {
         animator.SetBool("Walking", false);
         animator.SetBool("Running", false);
+    }
+    public void PlayStepAnimation(bool isRunning = false)
+    {
+        animator.SetBool("Walking", !isRunning);
+        animator.SetBool("Running", isRunning);
+        isAutoMoving = true;
+    }
+    public void StopStepAnimation()
+    {
+        animator.SetBool("Walking", false);
+        animator.SetBool("Running", false);
+        isAutoMoving = false;
     }
 }

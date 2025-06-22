@@ -15,6 +15,10 @@ public class BarScript : MonoBehaviour
     public float duration = 5f; // Время в секундах, за которое шкала должна исчезнуть
     public float regenerationDuration = 3f; // Время полного восстановления
 
+    private float startFillAmount = 0.6f;
+    private bool isFirstManualRun = true;
+
+
     public float criticalLevelAmount = 0.4f;
     [Header("Режим работы")]
     public BarMode mode = BarMode.Manual;
@@ -37,6 +41,7 @@ public class BarScript : MonoBehaviour
     private Color normalColor;
     public Color criticalColor = new Color(0xF2 / 255f, 0xC9 / 255f, 0x89 / 255f); // F2C989
 
+    
     private void Awake()
     {
         Image[] allImages = GetComponentsInChildren<Image>(includeInactive: true);
@@ -111,7 +116,7 @@ public class BarScript : MonoBehaviour
         if (!isRunning) return;
 
         timer += Time.deltaTime;
-        float fill = Mathf.Clamp01(1f - (timer / duration));
+        float fill = Mathf.Clamp01(startFillAmount - (timer / duration));
         barImage.fillAmount = fill;
 
         if (fill <= criticalLevelAmount && !isCriticalLevel)
@@ -200,6 +205,7 @@ public class BarScript : MonoBehaviour
     public void ResetBar()
     {
         EnableBar();
+        startFillAmount = 1f;
         timer = 0f;
         regenTimer = 0f;
         isFailure = false;

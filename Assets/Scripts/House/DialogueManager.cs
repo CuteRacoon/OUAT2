@@ -97,7 +97,9 @@ public class DialogueManager : MonoBehaviour
 
     public void PlayPartOfPlot(string knotName)
     {
+        story = new Story(inkFile.text);
         dialogueCoroutine = StartCoroutine(PlayKnot(knotName, false));
+
     }
     public void StopDialogue()
     {
@@ -140,6 +142,7 @@ public class DialogueManager : MonoBehaviour
     public void PlayPartOfPlotWithDelay(string knotName, float neededDelay)
     {
         delay = neededDelay;
+        story = new Story(inkFile.text);
         dialogueCoroutine = StartCoroutine(PlayKnot(knotName, true));
     }
 
@@ -202,6 +205,10 @@ public class DialogueManager : MonoBehaviour
                 DisplayChoices();
                 yield break;
             }
+        }
+        if (!story.canContinue && story.currentChoices.Count == 0)
+        {
+            isDialoguePlaying = false;
         }
 
         yield return new WaitForSeconds(0.5f);

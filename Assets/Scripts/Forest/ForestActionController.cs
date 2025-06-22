@@ -12,6 +12,8 @@ public class ForestActionController : MonoBehaviour
     private bool lampState;
     public static ForestActionController Instance { get; private set; }
 
+    private int currentTriggerIndex;
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -20,6 +22,7 @@ public class ForestActionController : MonoBehaviour
         playerController = FindAnyObjectByType<PlayerController>();
 
         StartCoroutine(DialogueCoroutine());
+        MonsterTrigger.OnMonsterTriggerEnter += HandlePlayerEnterTrigger;
     }
     private void Awake()
     {
@@ -31,30 +34,47 @@ public class ForestActionController : MonoBehaviour
         }
         Instance = this;
     }
-
+    private void HandlePlayerEnterTrigger(MonsterTrigger trigger)
+    {
+        currentTriggerIndex = trigger.index;
+        StartCoroutine(GirlThoughts3());
+    }
+    IEnumerator GirlThoughts3()
+    {
+        if (currentTriggerIndex == 1)
+        {
+            yield return new WaitForSeconds(5f);
+            dialogueManager.PlayPartOfPlot("girl_thoughts_4");
+        }
+        if (currentTriggerIndex == 0)
+        {
+            yield return new WaitForSeconds(3f);
+            dialogueManager.PlayPartOfPlot("girl_thoughts_3");
+        }
+    }
     private IEnumerator DialogueCoroutine()
     {
-        /*GameEvents.RaiseCannotDisplayLampBar();
-        yield return new WaitForSeconds(4f);
-        dialogueManager.PlayPartOfPlot("girl_thoughts");
+        GameEvents.RaiseCannotDisplayLampBar();
+        yield return new WaitForSeconds(2f);
+        dialogueManager.PlayPartOfPlot("girl_thoughts_1");
         while (dialogueManager.IsDialoguePlaying)
         {
             yield return null;
         }
-        StartCoroutine(StartLampLearning());*/
+        StartCoroutine(StartLampLearning());
 
         // при билде убрать, раскомментить обучение
-        GameEvents.RaiseCannotDisplayLampBar();
+        /*GameEvents.RaiseCannotDisplayLampBar();
         yield return new WaitForSeconds(0.5f);
         lampController.StateCanUseLamp(true);
-        lampController.LearningCompleted();
+        lampController.LearningCompleted();*/
 
     }
     public void HidePerson()
     {
         lampState = lampController.IsLampOn;
 
-        playerController.SetPlayerControl(false);
+        playerController.SetPlayerControl(false, true);
         playerController.SetMovement(false);
         lampController.DisableLampBar();
         lampController.StateCanUseLamp(false);
@@ -64,13 +84,13 @@ public class ForestActionController : MonoBehaviour
     {
         ForestCameraManager.Instance.SwitchToPlayerCamera();
         lampController.StateCanUseLamp(true);
-        playerController.SetPlayerControl(true);
+        playerController.SetPlayerControl(true, false);
         playerController.SetMovement(true);
         lampController.SetLampState(lampState); //вернуть лампу в изначальное положение
     }
     private IEnumerator StartLampLearning()
     {
-        playerController.SetPlayerControl(false);
+        playerController.SetPlayerControl(false, true);
 
         dialogueManager.LearningPanelText("Для того, чтобы зажечь лампу, нажмите F");
         lampController.StateCanUseLamp(true);
@@ -102,6 +122,8 @@ public class ForestActionController : MonoBehaviour
         lampController.ResumeLampBar();
         lampController.LearningCompleted();
 
-        playerController.SetPlayerControl(true);
+        playerController.SetPlayerControl(true, false);
+        yield return new WaitForSeconds(3f);
+        dialogueManager.PlayPartOfPlot("girl_thoughts_2");
     }
 }

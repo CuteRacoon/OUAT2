@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class RunAwayController : MonoBehaviour
 {
@@ -17,14 +18,21 @@ public class RunAwayController : MonoBehaviour
         Animation anime = followCamera.GetComponent<Animation>();
         anime.Play("RunAwayCameraAnimation");
         barScript.DisableBar();
-        StartCoroutine(FailureCoroutine());
+        LampController.Instance.DisableLampBar();
+        StartCoroutine(BackToMenuCoroutine());
+       // StartCoroutine(FailureCoroutine());
         //PlayerController.Instance.SetPlayerControl(false);
     }
-    private IEnumerator FailureCoroutine()
+    /*private IEnumerator FailureCoroutine()
     {
         MonsterSceneController.Instance.StartRunning();
         yield return new WaitForSeconds(1.5f);
         MonsterSceneController.Instance.StopRunning();
+    }*/
+    IEnumerator BackToMenuCoroutine()
+    {
+        yield return new WaitForSeconds(5f);
+        SceneManager.LoadScene("Menu");
     }
     void HandleStartChase(GooseTrigger trigger)
     {

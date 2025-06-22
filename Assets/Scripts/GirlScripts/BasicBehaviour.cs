@@ -32,6 +32,7 @@ public class BasicBehaviour : MonoBehaviour
     private const float maxLockDuration = 2f;
 
     private bool inputLocked = false;  // Новый флаг
+    public bool IsInputLocked => inputLocked;
 
     // Catscene variables
     private bool inCutscene = false;
@@ -377,13 +378,10 @@ public class BasicBehaviour : MonoBehaviour
         Ray ray = new Ray(this.transform.position + Vector3.up * (2 * colExtents.x), Vector3.down);
         return Physics.SphereCast(ray, colExtents.x, colExtents.x + 0.2f);
     }
-    public void DisablePlayerControl()
+    public void DisablePlayerControl(bool needToIdleState)
     {
         inputLocked = true;
-        h = 0;
-        v = 0;
-        anim.SetFloat(hFloat, 0);
-        anim.SetFloat(vFloat, 0);
+        if (needToIdleState) PlayerAnimatorController.Instance.SetIdleState();
     }
     public void EnablePlayerControl()
     {

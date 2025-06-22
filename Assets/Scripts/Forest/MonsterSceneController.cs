@@ -7,6 +7,7 @@ public class MonsterSceneController : MonoBehaviour
 {
     private PlayerController playerController;
     private BasicBehaviour basicBehaviour; // Drag the player's BasicBehaviour here in the Inspector
+    private MoveBehaviour moveBehaviour;
     //private Animation girlMovementAnime;
     public GameObject girlComponent;
     public Transform stayingGirlParentObj;
@@ -39,6 +40,7 @@ public class MonsterSceneController : MonoBehaviour
     {
         playerController = girlComponent.GetComponentInChildren<PlayerController>();
         basicBehaviour = girlComponent.GetComponentInChildren<BasicBehaviour>();
+        moveBehaviour = girlComponent.GetComponentInChildren<MoveBehaviour>();
         cameraFollowScript = FindAnyObjectByType<CameraFollowScript>();
 
         int childCount = stayingGirlParentObj.childCount;
@@ -63,17 +65,17 @@ public class MonsterSceneController : MonoBehaviour
 
         canvasObj = currentTrigger.transform.GetChild(0).gameObject;
     }
-    public void StartRunning()
+    /*public void StartRunning()
     {
         if (lampState) GameEvents.RaiseCannotDisplayLampBar();
-        basicBehaviour.StartGirlInMonsterSceneAnimation(0.5f, 0.5f);
+        //basicBehaviour.StartGirlInMonsterSceneAnimation(0.5f, 0.5f);
         basicBehaviour.LockTempBehaviour(basicBehaviour.GetHashCode());
         
-    }
-    public void StopRunning()
+    }*/
+    /*public void StopRunning()
     {
         basicBehaviour.EndGirlInMonsterSceneAnimation();
-    }
+    }*/
     void TeleportPlayer()
     {
         if (currentTriggerIndex < 0 || currentTriggerIndex >= stayingGirls.Length)
@@ -104,16 +106,16 @@ public class MonsterSceneController : MonoBehaviour
     }
     IEnumerator PlayGirlAnimation()
     {
+        GameEvents.RaiseCannotDisplayLampBar();
         // 1.Переключаем камеру
         ForestCameraManager.Instance.SwitchToMonsterCamera(currentTriggerIndex);
         canvasObj.SetActive(true);
 
         // 2. Телепортируем игрока
         TeleportPlayer();
-
-        // 3. Запускаем бег по прямой
-        StartRunning();
-
+        DialogueManager.Instance.HideAllPanels();
+        moveBehaviour.StartAutoMove(Vector3.forward, 3.5f);
+        PlayerAnimatorController.Instance.PlayStepAnimation(isRunning: false);
         // 4. Получаем длительность анимации камеры
         float waitTime = runDuration;
         Animation cameraAnimation = ForestCameraManager.Instance.GetCurrentCamera().GetComponent<Animation>();
@@ -125,7 +127,8 @@ public class MonsterSceneController : MonoBehaviour
         yield return new WaitForSeconds(waitTime);
 
         // 5. Останавливаем бег и возвращаем управление игроку
-        StopRunning();
+        moveBehaviour.StopAutoMove();
+        PlayerAnimatorController.Instance.StopStepAnimation();
         ForestCameraManager.Instance.SwitchToPlayerCamera();
 
         cameraFollowScript.SetTargetPosition();

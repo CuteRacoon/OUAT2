@@ -94,11 +94,11 @@ public class PlayerController : MonoBehaviour
         gameObject.GetComponent<BasicBehaviour>().enabled = state;
         //gameObject.SetActive(state);
     }
-    public void SetPlayerControl(bool state)
+    public void SetPlayerControl(bool state, bool needToSetIdleState)
     {
         if (!state)
         {
-            basicBehaviour.DisablePlayerControl();
+            basicBehaviour.DisablePlayerControl(needToSetIdleState);
         }
         else
         {

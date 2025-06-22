@@ -16,6 +16,11 @@ public class MoveBehaviour : GenericBehaviour
     public float sprintMultiplier = 0.8f;
     private float speedMultiplier = 1.0f;
 
+    private bool isAutoMoving = false;
+    private Vector3 autoMoveDirection = Vector3.zero;
+    private float autoMoveSpeed = 0f;
+
+
     private bool isChasingMode = false;
 
     // Start is always called after any Awake functions.
@@ -36,6 +41,17 @@ public class MoveBehaviour : GenericBehaviour
     {
         isChasingMode = false;
     }
+    public void StartAutoMove(Vector3 direction, float speed)
+    {
+        isAutoMoving = true;
+        autoMoveDirection = direction.normalized;
+        autoMoveSpeed = speed;
+    }
+    public void StopAutoMove()
+    {
+        isAutoMoving = false;
+    }
+
     IEnumerator SpeedsAnimeCoroutine()
     {
         yield return null;
@@ -60,6 +76,12 @@ public class MoveBehaviour : GenericBehaviour
 
     void MovementManagement(float horizontal, float vertical)
     {
+        // Если включён автоход, переопределяем ввод
+        if (isAutoMoving)
+        {
+            horizontal = autoMoveDirection.x;
+            vertical = autoMoveDirection.z; // Мы игнорируем Y
+        }
         Vector3 direction = Rotating(horizontal, vertical);
 
         Vector2 inputDir = new Vector2(horizontal, vertical);
@@ -78,15 +100,21 @@ public class MoveBehaviour : GenericBehaviour
 
         // Плавная интерполяция скорости: Lerp от текущей к целевой
         float desiredSpeed = inputMagnitude * targetSpeed;
+        // Если автодвижение, использовать его скорость
+        if (isAutoMoving)
+        {
+            desiredSpeed = autoMoveSpeed;
+        }
 
         speed = Mathf.Lerp(speed, desiredSpeed, 0.5f);
 
-        // Физическое перемещение
-        if (direction != Vector3.zero)
-        {
-            Vector3 movement = direction * speed * Time.fixedDeltaTime;
-            behaviourManager.GetRigidBody.MovePosition(behaviourManager.GetRigidBody.position + movement);
-        }
+        // Применяем движение через velocity, чтобы сохранить гравитацию
+        Vector3 currentVelocity = behaviourManager.GetRigidBody.linearVelocity;
+        Vector3 velocity = direction * speed;
+        velocity.y = currentVelocity.y; // Сохраняем текущую вертикальную скорость
+
+        behaviourManager.GetRigidBody.linearVelocity = velocity;
+
 
         // Передача параметра в аниматор
         //behaviourManager.GetAnim.SetFloat(speedFloat, speed, speedDampTime, Time.deltaTime);
@@ -107,6 +135,10 @@ public class MoveBehaviour : GenericBehaviour
         // Calculate target direction based on camera forward and direction key.
         Vector3 right = new Vector3(forward.z, 0, -forward.x);
         Vector3 targetDirection = forward * vertical + right * horizontal;
+        if (behaviourManager.IsInputLocked)
+        {
+            return Vector3.zero;
+        }
         if (behaviourManager.GetPlayerController() != null &&
         behaviourManager.GetPlayerController().IsPositionLocked())
         {

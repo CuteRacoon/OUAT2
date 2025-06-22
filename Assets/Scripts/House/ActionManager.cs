@@ -76,6 +76,7 @@ public class ActionManager : MonoBehaviour
     private IEnumerator startDialogueNearBake()
     {
         yield return StartCoroutine(FadeOutBackgroundImage());
+        interactionController.SetCanInteractOfTriggerByIndex(2, false);
 
         gameCanvas.SetActive(true);
         prehistoryCanvas.SetActive(false);
@@ -90,7 +91,6 @@ public class ActionManager : MonoBehaviour
         }
 
         interactionController.ResetInteraction();
-        interactionController.DisableTriggerByIndex(2);
         interactionController.SetCanInteractOfTriggerByIndex(2, false);
 
         StartCoroutine(showFirstLearningPhrase());
@@ -144,9 +144,9 @@ public class ActionManager : MonoBehaviour
         PlayerController.Instance.SetActiveObjectInHands(true);
         //TestCutScene();
         interactionController.ResetInteraction();
-        interactionController.SetCanInteractOfTriggerByIndex(2, true);
         interactionController.SetCanInteractOfTriggerByIndex(0, false);
         interactionController.SetCanInteractOfTriggerByIndex(1, false);
+        interactionController.SetCanInteractOfTriggerByIndex(2, true);
     }
     public void StartCutScene()
     {
