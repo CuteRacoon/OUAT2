@@ -54,6 +54,10 @@ public class DialogueManager : MonoBehaviour
         }
         Instance = this;
     }
+    private void OnDestroy()
+    {
+        CanResetButtonsState = null;
+    }
 
     void Start()
     {
@@ -285,7 +289,7 @@ public class DialogueManager : MonoBehaviour
 
     void Update()
     {
-        if (isDialoguePlaying && Input.GetMouseButtonDown(0) && canSkip)
+        if (isDialoguePlaying && Input.GetKeyDown(KeyCode.Space) && canSkip)
         {
             skipRequested = true;
         }

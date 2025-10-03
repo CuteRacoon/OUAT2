@@ -3,6 +3,8 @@ using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
+using UnityEngine.Audio;
+
 
 public class ActionManager : MonoBehaviour
 {
@@ -15,7 +17,14 @@ public class ActionManager : MonoBehaviour
     [SerializeField] private GameObject endPotion;
     [SerializeField] private GameObject cutScene;
     [SerializeField] private GameObject[] lights = new GameObject[2];
+
+    [SerializeField] private AudioMixer masterMixer;
+    private string environmentVolumeParam = "EnvironmentVolume";
+
+    public bool isNight = false;
     public static ActionManager Instance { get; private set; }
+    private bool cutSceneRunning = false;
+
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -36,10 +45,18 @@ public class ActionManager : MonoBehaviour
         cutScene.gameObject.SetActive(false);
         lights[0].SetActive(true);
         lights[1].SetActive(false);
+        isNight = false;
 
         // При билде раскомментить
-        //gameCanvas.SetActive(false);
-        //prehistoryCanvas.SetActive(true);
+        if (prehistoryCanvas.activeSelf)
+        {
+            StartPreHistory();
+        }
+    }
+    private void StartPreHistory()
+    {
+        gameCanvas.SetActive(false);
+        prehistoryCanvas.SetActive(true);
     }
     private void OnEnable()
     {
@@ -80,7 +97,7 @@ public class ActionManager : MonoBehaviour
 
         gameCanvas.SetActive(true);
         prehistoryCanvas.SetActive(false);
-        
+
         yield return new WaitForSeconds(3f);
         
         dialogueController.PlayPartOfPlot("beginning");
@@ -150,6 +167,11 @@ public class ActionManager : MonoBehaviour
     }
     public void StartCutScene()
     {
+        cutSceneRunning = true;
+        if (masterMixer != null)
+        {
+            masterMixer.SetFloat(environmentVolumeParam, -60f);
+        }
         StartCoroutine(TestCutSceneCoroutine());
     }
     private IEnumerator TestCutSceneCoroutine()
@@ -166,16 +188,25 @@ public class ActionManager : MonoBehaviour
         }
         cutScene.gameObject.SetActive(true);
         dialogueController.PlayPartOfPlot("cut_scene");
+        dialogueController.BlockSkippingForOneKnot();
         // Ждём, пока видео не закончится
         yield return new WaitForSeconds(70f);
         cutScene.gameObject.SetActive(false);
 
+        if (masterMixer != null)
+        {
+            masterMixer.SetFloat(environmentVolumeParam, 0f);
+        }
         StartCoroutine(BakeCameraAnimation());
     }
     private IEnumerator BakeCameraAnimation()
     {
+        cutSceneRunning = false; // больше нельзя считать, что cutscene активен
+
         lights[1].SetActive(true);
         lights[0].SetActive(false);
+        isNight = true;
+
         cameraBehaviour.SwitchCamera(3);
         Camera camera = cameraBehaviour.GetCurrentCamera();
         Animation bakeCameraAnime = camera.GetComponent<Animation>();
@@ -217,6 +248,10 @@ public class ActionManager : MonoBehaviour
         cameraBehaviour.SwitchCamera(0);
         interactionController.ResetInteraction();
         dialogueController.HideAllPanels();*/
+    }
+    public void LoadForestScene()
+    {
+        SceneManager.LoadScene("Forest");
     }
     public void PlayBakeCameraAnimation()
     {

@@ -39,9 +39,11 @@ public class Herbs : Interactable
     {
         if (anime != null && animationsControl.IsNearCorrectBowl(this.gameObject))
         {
+            isAnimationPlaying = true;
             anime.Play("HerbsAnimation");
 
             yield return new WaitForSeconds(anime["HerbsAnimation"].length);
+            isAnimationPlaying = false;
 
             animationsControl.ObjectsOn(this.index, objectIndicator);
             gameLogic.AddToObjectsList(index, objectIndicator);

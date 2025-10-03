@@ -15,15 +15,15 @@ public class AnimationsManager : MonoBehaviour
     public bool isFull = false;
 
     public Animation mortarAnime;
-    private MiniGameLogicManager gameLogic;
 
     public Collider[] bowlColliders;
 
     public static AnimationsManager Instance { get; private set; }
 
+    public bool IsAnimationPlaying { get; private set; }
+
     private void Awake()
     {
-        gameLogic = FindAnyObjectByType<MiniGameLogicManager>();
         // Синглтон, для надёжности
         if (Instance != null && Instance != this)
         {
@@ -111,14 +111,18 @@ public class AnimationsManager : MonoBehaviour
     {
         if (mortarAnime != null)
         {
-            gameLogic.AccessHerbsAndBerriesInteraction(false);
+            IsAnimationPlaying = true;
+
+            MiniGameLogicManager.Instance.AccessHerbsAndBerriesInteraction(false);
             Debug.Log("Запускаю анимацию ступки");
 
             mortarAnime.Play("MortarAnimation");
             yield return new WaitForSeconds(mortarAnime["MortarAnimation"].length);
 
-            gameLogic.AccessBowls(3, true);
+            MiniGameLogicManager.Instance.AccessBowls(3, true);
             ObjectsDustOn(index, objectIndicator);
+
+            IsAnimationPlaying = false;
         }
         else Debug.Log("Animation нет на ступке"); ;
     }
@@ -156,7 +160,11 @@ public class AnimationsManager : MonoBehaviour
         ObjectsDustOn(-1, 2);
         isFull = false;
     }
-
+    public void CleanBowls()
+    {
+        CleanDust();
+        ObjectsOn(-1, 0);
+    }
     public void ObjectsOn(int index, int objectIndicator)
     {
         GameObject[] objects = null;

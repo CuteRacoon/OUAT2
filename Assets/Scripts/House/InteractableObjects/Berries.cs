@@ -60,11 +60,13 @@ public class Berries : Interactable
         // Если у объекта тег "berries", проигрываем анимацию и ждем ее завершения
         if (anime != null && animationsControl.IsNearCorrectBowl(this.gameObject))
         {
+            isAnimationPlaying = true;
             anime.Play("BerriesAnimation");
 
             StartCoroutine(SetActiveBerries());
             // Ждем пока анимация не закончит проигрываться.
             yield return new WaitForSeconds(timeToWait);
+            isAnimationPlaying = false;
 
             if (berriesObject != null && this.index > 0)
             {
@@ -92,4 +94,5 @@ public class Berries : Interactable
 
         berriesObject.SetActive(false);
     }
+
 }

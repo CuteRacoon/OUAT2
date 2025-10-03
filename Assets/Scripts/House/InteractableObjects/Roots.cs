@@ -35,9 +35,11 @@ public class Roots : Interactable
         if (anime != null && animationsControl.IsNearCorrectBowl(this.gameObject))
         {
             needToDelete = true;
+            isAnimationPlaying = true;
             anime.Play("RootsAnimation");
 
             yield return new WaitForSeconds(anime["RootsAnimation"].length);
+            isAnimationPlaying = false;
 
             animationsControl.ObjectsOn(this.index, objectIndicator);
             gameLogic.AddToObjectsList(index, objectIndicator);

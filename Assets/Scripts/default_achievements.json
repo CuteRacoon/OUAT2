@@ -1,0 +1,53 @@
+{
+    "achievements": [
+        {
+            "id": "another_way",
+            "title": "Другой способ",
+            "description": "Узнайте о другом способе выбраться из леса",
+            "unlocked": false,
+            "dateUnlocked": ""
+        },
+        {
+            "id": "did_you_hear",
+            "title": "Слыхали?",
+            "description": "Узнайте все деревенские сплетни",
+            "unlocked": false,
+            "dateUnlocked": ""
+        },
+        {
+            "id": "to_home_all",
+            "title": "Домой",
+            "description": "Спасите брата и сестру",
+            "unlocked": false,
+            "dateUnlocked": ""
+        },
+        {
+            "id": "to_home_brother",
+            "title": "Лишь один",
+            "description": "Спасите только брата",
+            "unlocked": false,
+            "dateUnlocked": ""
+        },
+        {
+            "id": "to_home_none",
+            "title": "Шаги смолкли",
+            "description": "Оставьте обоих детей в лесу",
+            "unlocked": false,
+            "dateUnlocked": ""
+        },
+        {
+            "id": "truth_disease",
+            "title": "Не болезнь",
+            "description": "Узнайте правду о болезни, поразившей брата",
+            "unlocked": false,
+            "dateUnlocked": ""
+        },
+        {
+            "id": "friend_of_oven",
+            "title": "Тёплое общение",
+            "description": "Понравьтесь Печке",
+            "unlocked": false,
+            "dateUnlocked": ""
+        }
+    ]
+}

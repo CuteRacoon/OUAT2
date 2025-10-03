@@ -32,6 +32,9 @@ public class Interactable : MonoBehaviour
     protected InteractionManager interactionController;
     protected MiniGameLogicManager gameLogic;
 
+    protected bool isAnimationPlaying = false;
+    public bool IsAnimationPlaying => isAnimationPlaying;
+
     protected virtual void Start()
     {
         tableLayer = LayerMask.GetMask("Table");

@@ -34,9 +34,11 @@ public class Bowls : Interactable
         }
         if (anime != null && animationsControl.IsNearCorrectBowl(this.gameObject))
         {
+            isAnimationPlaying = true;
             anime.Play(animationName);
             yield return new WaitForSeconds(anime[animationName].length - 0.5f);
             animationsControl.CleanDust();
+            isAnimationPlaying = false;
 
             if (index == 3)
             {

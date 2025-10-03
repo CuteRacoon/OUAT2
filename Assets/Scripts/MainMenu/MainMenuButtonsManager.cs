@@ -22,7 +22,10 @@ public class MainMenuButtonsManager : MonoBehaviour
         buttonStates = new bool[buttons.Length];
         DialogueManager.CanResetButtonsState += HandleResetButtons;
     }
-
+    private void OnEnable()
+    {
+        ResetButtons();
+    }
     public void OnButtonClicked(int index)
     {
         // Обработка переключателя

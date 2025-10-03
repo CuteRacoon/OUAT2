@@ -25,6 +25,8 @@ public class MiniGameLogicManager : MonoBehaviour
     public static MiniGameLogicManager Instance { get; private set; }
     public static event Action CanStartPotionScene;
 
+    private bool firstAttempt = true;
+
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -57,6 +59,7 @@ public class MiniGameLogicManager : MonoBehaviour
 
         SetActiveAllIngredients();
         animationsControl.ResetWaters();
+        animationsControl.CleanBowls();
 
         AccessHerbsAndBerriesInteraction(false);
         AccessBowls(2, false);
@@ -66,6 +69,38 @@ public class MiniGameLogicManager : MonoBehaviour
         Berries[2].GetComponent<Berries>().ResetBerries();
         Berries[3].GetComponent<Berries>().ResetBerries();
         CollectedObjects.Clear();
+    }
+    public void ResetGameByButton()
+    {
+        StartCoroutine(WaitAnimationsAndRestart());
+    }
+
+    private IEnumerator WaitAnimationsAndRestart()
+    {
+        // Ждём пока AnimationsManager играет анимацию
+        while (animationsControl.IsAnimationPlaying)
+            yield return null;
+
+        // Ждём пока хоть один Interactable играет анимацию
+        var interactables = FindObjectsByType<Interactable>(FindObjectsSortMode.None);
+        bool anyPlaying;
+        do
+        {
+            anyPlaying = false;
+            foreach (var inter in interactables)
+            {
+                if (inter.IsAnimationPlaying)
+                {
+                    anyPlaying = true;
+                    break;
+                }
+            }
+            if (anyPlaying) yield return null;
+        }
+        while (anyPlaying);
+
+        // Сброс игры
+        ResetGame();
     }
     public void SetActiveAllIngredients()
     {
@@ -145,7 +180,9 @@ public class MiniGameLogicManager : MonoBehaviour
             StartCoroutine(EndGame(3));
             Debug.Log("Количество несовпадений: " + differences);
             animationsControl.ObjectsOn(4, 4);
+            if (firstAttempt) AchievementDataManager.Instance.Unlock("master_hand");
         }
+        firstAttempt = false;
     }
     public void SortList(List<KeyValuePair<int, int>> list)
     {

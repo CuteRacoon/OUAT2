@@ -11,6 +11,7 @@ public class MainMenuController : MonoBehaviour
     public Material[] materials = new Material[4];
     public AudioClip[] sounds = new AudioClip[2];
     public GameObject RightPage;
+    public GameObject exitPanel;
     
     private AudioSource audioSource;
     private GameObject canvas;
@@ -84,7 +85,17 @@ public class MainMenuController : MonoBehaviour
         currentActiveBookmarkIndex = initialActiveBookmarkIndex;
         StartCoroutine(ResetMeshes(initialActiveBookmarkIndex, false));
     }
-
+    public void StayInTheGame()
+    {
+        if (exitPanel)
+        {
+            exitPanel.SetActive(false);
+        }
+    }
+    public void ExitGame()
+    {
+        Application.Quit();
+    }
     public void OnBookmarkButtonClicked(int bookmarkIndex)
     {
         //bookmarkAnimators[bookmarkIndex].SetTrigger("NeedToHide");

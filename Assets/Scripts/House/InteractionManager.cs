@@ -25,6 +25,9 @@ public class InteractionManager : MonoBehaviour
     private int windowDialogueIndex = 0;
     private int recipeDialogueIndex = 0;
 
+    private int fullyHeardDialogues = 0;
+    private int totalDialogues = 3; // именно 3 твоих диалога
+
     public bool playerInside = false;
     private bool somethingChanging = false;
     private bool inProcess = false;
@@ -175,7 +178,7 @@ public class InteractionManager : MonoBehaviour
                 return;
             }
 
-            if (Input.GetKeyDown(KeyCode.E))
+            if (Input.GetKeyDown(KeyCode.E) && PauseManager.Instance.CurrentPauseState == PauseManager.PauseState.PLAY)
             {
                 if (!inProcess)
                 {
@@ -280,7 +283,8 @@ public class InteractionManager : MonoBehaviour
         }
 
         string dialogueKey = $"window_dialogue_{windowDialogueIndex}";
-        Debug.Log("Запускаю диалог" + windowDialogueIndex);
+        Debug.Log("Запускаю диалог " + windowDialogueIndex);
+
         if (dialogueKey == null)
         {
             windowDialogueCoroutine = null;
@@ -300,23 +304,42 @@ public class InteractionManager : MonoBehaviour
                 started = true;
                 return true;
             }
-            // если игрок вышел до начала — выходим
-            return !inProcess;
+            return !inProcess; // если игрок вышел до начала
         });
 
         if (!started)
         {
-            // диалог не начался — не увеличиваем индекс
             windowDialogueCoroutine = null;
             yield break;
         }
+
         // Блокируем пропуск, ждём завершения диалога
         dialogueController.BlockSkippingForOneKnot();
-        // Ждём, пока он закончится или взаимодействие не будет сброшено
         yield return new WaitUntil(() => !dialogueController.IsDialoguePlaying || !inProcess);
+
+        // Проверяем, чем закончилось
+        if (dialogueController.IsDialoguePlaying == false && inProcess)
+        {
+            // диалог дослушан до конца
+            fullyHeardDialogues++;
+        }
+        else
+        {
+            // прерван — индекс не растёт, не засчитываем
+            Debug.Log("Диалог прерван, не засчитан");
+        }
+        // диалог закончился -> увеличиваем индекс
         windowDialogueIndex++;
+
+        // Проверка на достижение
+        if (fullyHeardDialogues >= totalDialogues)
+        {
+            AchievementDataManager.Instance.Unlock("did_you_hear");
+        }
+
         windowDialogueCoroutine = null;
     }
+
 
     public void SetPlayerPosition(int index)
     {
