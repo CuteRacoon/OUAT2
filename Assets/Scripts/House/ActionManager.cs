@@ -8,7 +8,6 @@ using UnityEngine.Audio;
 
 public class ActionManager : MonoBehaviour
 {
-    private DialogueManager dialogueController;
     private CameraManager cameraBehaviour;
     private InteractionManager interactionController;
 
@@ -17,13 +16,22 @@ public class ActionManager : MonoBehaviour
     [SerializeField] private GameObject endPotion;
     [SerializeField] private GameObject cutScene;
     [SerializeField] private GameObject[] lights = new GameObject[2];
+    [SerializeField] private GameObject goose;
 
+    public GameObject horrorSounds;
     [SerializeField] private AudioMixer masterMixer;
+    [SerializeField] private GameObject sittingBoy;
+
     private string environmentVolumeParam = "EnvironmentVolume";
+    private AudioSource gooseChawk;
 
     public bool isNight = false;
+    public bool brotherStoled = false;
     public static ActionManager Instance { get; private set; }
-    private bool cutSceneRunning = false;
+    private bool stopAllGooseActions = false;
+    private Coroutine volumeRoutine;
+    private bool hasPlayedGirlThoughts2 = false;
+
 
     private void Awake()
     {
@@ -37,8 +45,7 @@ public class ActionManager : MonoBehaviour
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
-    {
-        dialogueController = FindAnyObjectByType<DialogueManager>();
+    {    
         cameraBehaviour = FindAnyObjectByType<CameraManager>();
         interactionController = FindAnyObjectByType<InteractionManager>();
 
@@ -55,6 +62,7 @@ public class ActionManager : MonoBehaviour
     }
     private void StartPreHistory()
     {
+        InkQuestManager.Instance.SetQuestUIVisible(false);
         gameCanvas.SetActive(false);
         prehistoryCanvas.SetActive(true);
     }
@@ -72,6 +80,7 @@ public class ActionManager : MonoBehaviour
         cameraBehaviour.SwitchCamera(3);
         interactionController.SetPlayerPosition(2);
         interactionController.SetActiveTrigger(-1);
+        interactionController.SetCanInteractOfTriggerByIndex(2, false);
 
         StartCoroutine(startDialogueNearBake());
     }
@@ -100,22 +109,23 @@ public class ActionManager : MonoBehaviour
 
         yield return new WaitForSeconds(3f);
         
-        dialogueController.PlayPartOfPlot("beginning");
+        DialogueManager.Instance.PlayPartOfPlot("beginning");
 
-        while (dialogueController.IsDialoguePlaying)
+        while (DialogueManager.Instance.IsDialoguePlaying)
         {
             yield return null;
         }
 
         interactionController.ResetInteraction();
-        interactionController.SetCanInteractOfTriggerByIndex(2, false);
+        interactionController.SetCanInteractOfTriggerByIndex(2, true);
+        InkQuestManager.Instance.SetQuestUIVisible(true);
 
         StartCoroutine(showFirstLearningPhrase());
     }
     private IEnumerator showFirstLearningPhrase()
     {
         yield return new WaitForSeconds(1f);
-        dialogueController.LearningPanelText("Для перемещения используйте клавиши W, A, S, D или стрелочки");
+        DialogueManager.Instance.LearningPanelText("Для перемещения используйте клавиши W, A, S, D или стрелочки");
 
         // Ждём, пока игрок начнёт движение
         bool moved = false;
@@ -131,14 +141,14 @@ public class ActionManager : MonoBehaviour
         }
         // Подождать ещё 0.5 секунды перед скрытием
         yield return new WaitForSeconds(0.5f);
-        dialogueController.HideAllPanels();
+        DialogueManager.Instance.HideAllPanels();
 
         yield return StartCoroutine(showFirstRecipeHint());
     }
     private IEnumerator showFirstRecipeHint()
     {
         yield return new WaitForSeconds(1f);
-        dialogueController.PlayPartOfPlot("recipe_hint_1");
+        DialogueManager.Instance.PlayPartOfPlot("recipe_hint_1");
     }
     public void StartPotionCutScene()
     {
@@ -146,7 +156,11 @@ public class ActionManager : MonoBehaviour
     }
     private IEnumerator PotionGetting()
     {
-        dialogueController.LearningPanelText("Нажмите Q, чтобы взять зелье в руки");
+        InteractionManager.Instance.SetInputLocked(true); //заблокируем выход из триггера
+        DialogueManager.Instance.LearningPanelText("Нажмите Q, чтобы взять зелье в руки");
+        InkQuestManager.Instance.SetAdditionalTaskByIndex(3);
+        BoyController.Instance.SitDown();
+        sittingBoy.SetActive(true);
         bool clicked = false;
         while (!clicked)
         {
@@ -154,11 +168,12 @@ public class ActionManager : MonoBehaviour
             yield return null;
         }
         PlayerAnimatorController.Instance.SetHandAnimate(true);
-        dialogueController.HideAllPanels();
+        DialogueManager.Instance.HideAllPanels();
         endPotion.SetActive(false);
         yield return new WaitForSeconds(1f);
         cameraBehaviour.SwitchCamera(0);
         PlayerController.Instance.SetActiveObjectInHands(true);
+        InteractionManager.Instance.SetInputLocked(false); // разблокируем выход из триггера
         //TestCutScene();
         interactionController.ResetInteraction();
         interactionController.SetCanInteractOfTriggerByIndex(0, false);
@@ -167,12 +182,13 @@ public class ActionManager : MonoBehaviour
     }
     public void StartCutScene()
     {
-        cutSceneRunning = true;
         if (masterMixer != null)
         {
             masterMixer.SetFloat(environmentVolumeParam, -60f);
         }
         StartCoroutine(TestCutSceneCoroutine());
+        sittingBoy.SetActive(false);
+        BoyController.Instance.LieDown();
     }
     private IEnumerator TestCutSceneCoroutine()
     {
@@ -187,25 +203,29 @@ public class ActionManager : MonoBehaviour
             volume.enabled = true;
         }
         cutScene.gameObject.SetActive(true);
-        dialogueController.PlayPartOfPlot("cut_scene");
-        dialogueController.BlockSkippingForOneKnot();
+        DialogueManager.Instance.PlayPartOfPlot("cut_scene");
+        DialogueManager.Instance.BlockSkippingForOneKnot();
         // Ждём, пока видео не закончится
         yield return new WaitForSeconds(70f);
         cutScene.gameObject.SetActive(false);
-
-        if (masterMixer != null)
-        {
-            masterMixer.SetFloat(environmentVolumeParam, 0f);
-        }
+        StartCoroutine(BakeCameraAnimation());
+    }
+    public void BakeCameraStart()
+    {
         StartCoroutine(BakeCameraAnimation());
     }
     private IEnumerator BakeCameraAnimation()
     {
-        cutSceneRunning = false; // больше нельзя считать, что cutscene активен
-
+        InkQuestManager.Instance.SetQuestUIVisible(false);
+        if (masterMixer != null)
+        {
+            masterMixer.SetFloat(environmentVolumeParam, -60f);
+        }
         lights[1].SetActive(true);
         lights[0].SetActive(false);
         isNight = true;
+
+        PauseManager.Instance.SetShouldChangeEnvironmentSounds(false);
 
         cameraBehaviour.SwitchCamera(3);
         Camera camera = cameraBehaviour.GetCurrentCamera();
@@ -213,20 +233,192 @@ public class ActionManager : MonoBehaviour
         bakeCameraAnime.Play("BakeCamera");
         yield return new WaitUntil(() => !bakeCameraAnime.isPlaying);
         yield return null;
-        bakeCameraAnime.Play("BakeCamera2");
-        DialogueManager.Instance.PlayPartOfPlot("girl_thoughts");
+
+        bakeCameraAnime.Stop();
+        
+        PlayerController.Instance.SetNewMovementSpeeds(3.8f, 3.8f, 4.5f);
+        bakeCameraAnime.Stop("BakeCamera");
+        bakeCameraAnime.Rewind("BakeCamera");
+        ResetSceneAfterBakeAnimation();
+        brotherStoled = true;
+        InkQuestManager.Instance.NextMainTask(2);
+        InkQuestManager.Instance.SetQuestUIVisible(true);
+    }
+    private void ResetSceneAfterBakeAnimation()
+    {
+        // РАСКОММИТИТЬ ДЛЯ ПОИСКА ЛАМПЫ
+        InteractionManager.Instance.SetInputLocked(false);
+        PlayerAnimatorController.Instance.SetHandAnimate(false);
+        PlayerController.Instance.SetActiveObjectInHands(false);
+        cameraBehaviour.SwitchCamera(0);
+        interactionController.ResetInteraction();
+        DialogueManager.Instance.HideAllPanels();
+        interactionController.SetCanInteractOfTriggerByIndex(0, true);
+        interactionController.SetCanInteractOfTriggerByIndex(1, true);
+        DialogueManager.Instance.PlayPartOfPlotWithDelay("girl_thoughts", 2f);
+    }
+    public void HandleNightWindow(int number)
+    {
+        if (number == 1)
+        {
+            if (goose == null)
+            {
+                Debug.LogWarning("[HandleNightWindow] Объект 'goose' не найден в сцене!");
+                return;
+            }
+            // Находим дочерний объект "Chawk" у гуся
+            Transform chawkTransform = goose.transform.Find("Chawk");
+            if (chawkTransform == null)
+            {
+                Debug.LogWarning("[HandleNightWindow] У 'goose' не найден дочерний объект 'Chawk'!");
+                return;
+            }
+
+            // Получаем компонент AudioSource
+            gooseChawk = chawkTransform.GetComponent<AudioSource>();
+            if (gooseChawk == null)
+            {
+                Debug.LogWarning("[HandleNightWindow] У объекта 'Chawk' отсутствует AudioSource!");
+                return;
+            }
+
+            // Запускаем воспроизведение звука
+            gooseChawk.Play();
+            //Debug.Log("[HandleNightWindow] Проигрывается звук чавканья гуся");
+
+            DialogueManager.Instance.PlayPartOfPlotWithDelay("girl_thoughts_1", 2f);
+            horrorSounds.SetActive(false);
+        }
+        if (number == 2)
+        {
+            stopAllGooseActions = true;
+            InteractionManager.Instance.SetInputLocked(true);
+            if (volumeRoutine != null)
+            {
+                StopCoroutine(volumeRoutine);
+                volumeRoutine = null;
+            }
+            gooseChawk.Stop();
+            DialogueManager.Instance.StopDialogue();
+            Animation gooseAnime = goose.GetComponent<Animation>();
+            gooseAnime.Play();
+            StartCoroutine(WaitForGooseAnimationEnd(gooseAnime));
+        }
+    }
+    public void ScreamGoose()
+    {
+        Animation gooseAnime = goose.GetComponent<Animation>();
+        gooseAnime.Play();
+    }
+    private IEnumerator WaitForGooseAnimationEnd(Animation gooseAnime)
+    {
+        while (gooseAnime.isPlaying)
+        {
+            yield return null;
+        }
+
+        InteractionManager.Instance.SetInputLocked(false);
+        LoadForestScene();
+    }
+
+    public void HighVolume()
+    {
+        volumeRoutine = StartCoroutine(SmoothIncreaseVolume());
+    }
+    private IEnumerator SmoothIncreaseVolume()
+    {
+        float duration = 15f;
+        float startVolume = gooseChawk.volume;
+        float elapsed = 0f;
+
+        while (elapsed < duration)
+        {
+            if (stopAllGooseActions) yield break;
+
+            elapsed += Time.deltaTime;
+            gooseChawk.volume = Mathf.Lerp(startVolume, 1f, elapsed / duration);
+            yield return null;
+        }
+
+        gooseChawk.volume = 1f;
+
+        float t = 0f;
+        while (t < 4f)
+        {
+            if (stopAllGooseActions) yield break;
+            t += Time.deltaTime;
+            yield return null;
+        }
+
+        gooseChawk.Stop();
+
+        t = 0f;
+        while (t < 3f)
+        {
+            if (stopAllGooseActions) yield break;
+            t += Time.deltaTime;
+            yield return null;
+        }
+
+        if (!stopAllGooseActions && !hasPlayedGirlThoughts2)
+        {
+            hasPlayedGirlThoughts2 = true;
+            DialogueManager.Instance.PlayPartOfPlot("girl_thoughts_2");
+        }
+
+
+        volumeRoutine = null;
+    }
+
+    public void SetGooseScreaming()
+    {
+        Transform gooseAnimTransform = goose.transform.Find("goose_anim");
+        if (gooseAnimTransform == null)
+        {
+            Debug.LogWarning("[SetGooseScreaming] У 'goose' не найден дочерний объект 'goose_anim'!");
+            return;
+        }
+
+        // Получаем Animator
+        Animator gooseAnimator = gooseAnimTransform.GetComponent<Animator>();
+        if (gooseAnimator == null)
+        {
+            Debug.LogWarning("[SetGooseScreaming] У объекта 'goose_anim' отсутствует компонент Animator!");
+            return;
+        }
+
+        // Устанавливаем булевый параметр "screaming" в true
+        gooseAnimator.SetBool("screaming", true);
+        Debug.Log("[SetGooseScreaming] Гусь теперь кричит");
+    }
+
+    public IEnumerator BrotherPotionCoroutine()
+    {
+        InteractionManager.Instance.SetInputLocked(true);
+        DialogueManager.Instance.PlayPartOfPlot("brother_potion");
         while (DialogueManager.Instance.IsDialoguePlaying)
         {
             yield return null;
         }
-        bakeCameraAnime.Stop();
+        yield return new WaitForSeconds(1f);
+        StartCutScene();
+        yield return null;
+    }
 
-        // Плавное увеличение интенсивности Volume
+    public void LoadForestScene()
+    {
+        StartCoroutine(LoadForestSceneCoroutine());
+    }
+    private IEnumerator LoadForestSceneCoroutine()
+    {
+        Camera camera = cameraBehaviour.GetCurrentCamera();
+        Animation anime = camera.GetComponent<Animation>();
+        anime.Stop();
         Volume volume = camera.GetComponent<Volume>();
         volume.enabled = true;
         if (volume != null)
         {
-            float duration = 2f;
+            float duration = 1f;
             float elapsed = 0f;
             volume.weight = 0f;
 
@@ -240,21 +432,5 @@ public class ActionManager : MonoBehaviour
             volume.weight = 1f; // Убедимся, что точно 1
         }
         SceneManager.LoadScene("Forest");
-
-        // РАСКОММИТИТЬ ДЛЯ ПОИСКА ЛАМПЫ
-        /*InteractionManager.Instance.SetInputLocked(false);
-        PlayerAnimatorController.Instance.SetHandAnimate(false);
-        PlayerController.Instance.SetActiveObjectInHands(false);
-        cameraBehaviour.SwitchCamera(0);
-        interactionController.ResetInteraction();
-        dialogueController.HideAllPanels();*/
-    }
-    public void LoadForestScene()
-    {
-        SceneManager.LoadScene("Forest");
-    }
-    public void PlayBakeCameraAnimation()
-    {
-        StartCoroutine(BakeCameraAnimation());
     }
 }

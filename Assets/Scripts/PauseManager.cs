@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.Audio;
+
 public class PauseManager : MonoBehaviour
 {
     public enum PauseState
@@ -20,6 +21,10 @@ public class PauseManager : MonoBehaviour
     private GameObject activeCanvas;
     public static PauseManager Instance { get; private set; }
     public PauseState CurrentPauseState { get; private set; } = PauseState.PLAY;
+
+    // Новый флаг — нужно ли менять environment-звуки
+    private bool shouldChangeEnvironmentSounds = true;
+
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -29,47 +34,59 @@ public class PauseManager : MonoBehaviour
         }
         Instance = this;
     }
+
     private void Update()
     {
         if (Input.GetKeyDown(KeyCode.Escape) && pauseCanvas)
         {
-             TogglePause();
+            TogglePause();
         }
     }
 
     void TogglePause()
     {
-        bool isPaused = !pauseCanvas.activeSelf; //Если до этого канвас не был запущен, значит сейчас пауза
+        // Проверяем активный канвас, а не только pauseCanvas
+        bool isPaused = activeCanvas == null || !activeCanvas.activeSelf;
 
         CurrentPauseState = isPaused ? PauseState.PAUSE : PauseState.PLAY;
 
-        if (ActionManager.Instance && additionalCanvas && ActionManager.Instance.isNight) //если по данным игры это ночь
+        // Определяем, какой канвас сейчас должен использоваться
+        if (ActionManager.Instance && additionalCanvas && ActionManager.Instance.isNight)
         {
             activeCanvas = additionalCanvas;
         }
-        else activeCanvas = pauseCanvas;
+        else
+        {
+            activeCanvas = pauseCanvas;
+        }
+
+        // Включаем или выключаем канвас
         activeCanvas.SetActive(isPaused);
         UIElements.SetActive(!isPaused);
 
         Time.timeScale = isPaused ? 0f : 1f;
 
-        // управляем громкостью группы Prehistory
         if (masterMixer != null)
         {
             if (isPaused)
             {
-                masterMixer.SetFloat(prehistoryVolumeParam, -60f); // заглушаем
-                masterMixer.SetFloat(environmentVolumeParam, -10f);
+                masterMixer.SetFloat(prehistoryVolumeParam, -60f);
+                if (shouldChangeEnvironmentSounds)
+                    masterMixer.SetFloat(environmentVolumeParam, -10f);
             }
-            else SoundsBack();
+            else
+                SoundsBack();
         }
-
     }
+
+
     private void SoundsBack()
     {
         masterMixer.SetFloat(prehistoryVolumeParam, 0f);
-        masterMixer.SetFloat(environmentVolumeParam, 0f);
+        if (shouldChangeEnvironmentSounds)
+            masterMixer.SetFloat(environmentVolumeParam, 0f);
     }
+
     public void ResumeGame()
     {
         Time.timeScale = 1f;
@@ -84,18 +101,23 @@ public class PauseManager : MonoBehaviour
 
     public void BackToMenu()
     {
-        // при переходе в меню обязательно возвращаем время
         Time.timeScale = 1f;
         SceneManager.LoadScene("Menu");
         CurrentPauseState = PauseState.PLAY;
+
         if (masterMixer != null)
             SoundsBack();
     }
 
     public void ExitGame()
     {
-        // на всякий случай тоже возвращаем время
         Time.timeScale = 1f;
         Application.Quit();
+    }
+
+    // Новый метод: выставить флаг управления environment звуками
+    public void SetShouldChangeEnvironmentSounds(bool shouldChange)
+    {
+        shouldChangeEnvironmentSounds = shouldChange;
     }
 }

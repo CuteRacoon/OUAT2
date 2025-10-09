@@ -93,6 +93,10 @@ public class DialogueManager : MonoBehaviour
         textPanel.SetActive(false);
         learningPanel.SetActive(false);
     }
+    public void HideLearningPanel()
+    {
+        learningPanel.SetActive(false);
+    }
     public void ShowAllPanels()
     {
         textPanel.SetActive(true);
@@ -112,9 +116,9 @@ public class DialogueManager : MonoBehaviour
             StopCoroutine(dialogueCoroutine);
             dialogueCoroutine = null;
             skipRequested = true;
-            Debug.Log("Останавливаю корутину");
+            //Debug.Log("Останавливаю корутину");
         }
-        else Debug.Log("Корутина и так нулевая");
+        //else Debug.Log("Корутина и так нулевая");
 
         isDialoguePlaying = false;
         choiceButtonsParent.SetActive(false);
@@ -174,7 +178,7 @@ public class DialogueManager : MonoBehaviour
                             float.TryParse(tag.Substring(5), NumberStyles.Float, CultureInfo.InvariantCulture, out float parsedDelay))
                         {
                             delay = parsedDelay;
-                            Debug.Log($"[Monologue] Wait tag found, delay = {parsedDelay} seconds");
+                            //Debug.Log($"[Monologue] Wait tag found, delay = {parsedDelay} seconds");
                         }
                         else if (tag.StartsWith("othersLine_"))
                         {

@@ -166,19 +166,19 @@ public class MiniGameLogicManager : MonoBehaviour
         if (differences > 0 && differences <= 2)
         {
             StartCoroutine(EndGame(1));
-            Debug.Log("Количество несовпадений: " + differences);
+            //Debug.Log("Количество несовпадений: " + differences);
             animationsControl.ObjectsOn(2, 4);
         }
         else if (differences > 2)
         {
             StartCoroutine(EndGame(2));
-            Debug.Log("Количество несовпадений: " + differences);
+            //Debug.Log("Количество несовпадений: " + differences);
             animationsControl.ObjectsOn(3, 4);
         }
         else if (differences == 0 && CollectedObjects.Count == expectedObjects.Count)
         {
             StartCoroutine(EndGame(3));
-            Debug.Log("Количество несовпадений: " + differences);
+            //Debug.Log("Количество несовпадений: " + differences);
             animationsControl.ObjectsOn(4, 4);
             if (firstAttempt) AchievementDataManager.Instance.Unlock("master_hand");
         }
@@ -210,7 +210,7 @@ public class MiniGameLogicManager : MonoBehaviour
     public void AddToObjectsList(int index, int objectIndicator)
     {
         CollectedObjects.Add(new KeyValuePair<int, int>(objectIndicator, index));
-        Debug.Log("К списку ингредиентов добавлен " + index + "-й объект группы " + objectIndicator);
+        //Debug.Log("К списку ингредиентов добавлен " + index + "-й объект группы " + objectIndicator);
         if (objectIndicator == 0) rootIndex = index;
     }
     public bool CheckNumberOfObjects()
@@ -228,7 +228,7 @@ public class MiniGameLogicManager : MonoBehaviour
         }
         if (CollectedObjects.Count > 3)
         {
-            Debug.Log("Ингредиентов 3 штуки");
+            //Debug.Log("Ингредиентов 3 штуки");
             return true;
         }
         return false;
@@ -269,7 +269,7 @@ public class MiniGameLogicManager : MonoBehaviour
     public void SetCurrentObject(GameObject obj)
     {
         currentObject = obj;
-        Debug.Log("CurrentObject is" + currentObject.name);
+        //Debug.Log("CurrentObject is" + currentObject.name);
         neededBowlIndex = animationsControl.GetCorrectBowlIndex(currentObject);
         OutlineObject(neededBowlIndex, true);
     }
@@ -277,7 +277,7 @@ public class MiniGameLogicManager : MonoBehaviour
     public void NullCurrentObject()
     {
         currentObject = null;
-        Debug.Log("CurrentObject is null");
+        //Debug.Log("CurrentObject is null");
         OutlineObject(neededBowlIndex, false);
     }
     public void OutlineObject(int index, bool enable)
@@ -318,5 +318,9 @@ public class MiniGameLogicManager : MonoBehaviour
                 Debug.LogWarning($"Duplicated index {index} for tag {tag}. Object {obj.name} will be ignored.");
             }
         }
+    }
+    public void TestPotion()
+    {
+        CanStartPotionScene?.Invoke();
     }
 }

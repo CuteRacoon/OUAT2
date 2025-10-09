@@ -1,0 +1,97 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1001 &7158381047541726837
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: -8679921383154817045, guid: 61ba88edc06643e4dbb66929c5ab3ccb, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -0.60609865
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 61ba88edc06643e4dbb66929c5ab3ccb, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 61ba88edc06643e4dbb66929c5ab3ccb, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -2.8056808
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 61ba88edc06643e4dbb66929c5ab3ccb, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 61ba88edc06643e4dbb66929c5ab3ccb, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 61ba88edc06643e4dbb66929c5ab3ccb, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 61ba88edc06643e4dbb66929c5ab3ccb, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 61ba88edc06643e4dbb66929c5ab3ccb, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 61ba88edc06643e4dbb66929c5ab3ccb, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 61ba88edc06643e4dbb66929c5ab3ccb, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -2635669585532617541, guid: 61ba88edc06643e4dbb66929c5ab3ccb, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 83caef4283edbfe4f88bab3fee7a199e, type: 2}
+    - target: {fileID: 919132149155446097, guid: 61ba88edc06643e4dbb66929c5ab3ccb, type: 3}
+      propertyPath: m_Name
+      value: boy_anim 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6737817872966067152, guid: 61ba88edc06643e4dbb66929c5ab3ccb, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: e338f2116783b104cbc2276ddc2766d3, type: 2}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 61ba88edc06643e4dbb66929c5ab3ccb, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 4726172346594249156}
+  m_SourcePrefab: {fileID: 100100000, guid: 61ba88edc06643e4dbb66929c5ab3ccb, type: 3}
+--- !u!1 &8040830183815627556 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 61ba88edc06643e4dbb66929c5ab3ccb, type: 3}
+  m_PrefabInstance: {fileID: 7158381047541726837}
+  m_PrefabAsset: {fileID: 0}
+--- !u!95 &4726172346594249156
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8040830183815627556}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 2f001feb01df8a74d856ed484f87f69b, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0

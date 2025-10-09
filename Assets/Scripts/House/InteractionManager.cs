@@ -36,6 +36,8 @@ public class InteractionManager : MonoBehaviour
     private bool learningCompleted = false;
     private bool showingLearningPanel = false;
     public bool recipeChecked = false;
+    private bool potionFinished = false;
+
     private Coroutine windowDialogueCoroutine;
 
     //создаем singleton, поскольку скрипт - менеджер
@@ -48,6 +50,10 @@ public class InteractionManager : MonoBehaviour
             return;
         }
         Instance = this;
+    }
+    private void HandlePotion()
+    {
+        potionFinished = true;
     }
     public void SetInputLocked(bool isLocked)
     {
@@ -116,7 +122,7 @@ public class InteractionManager : MonoBehaviour
             if (showingLearningPanel && !learningCompleted)
             {
                 showingLearningPanel = false;
-                dialogueController.HideAllPanels(); // скрыть панель при выходе
+                dialogueController.HideLearningPanel();
             }
             if (inProcess)
             {
@@ -195,11 +201,12 @@ public class InteractionManager : MonoBehaviour
                     ResetInteraction();
                     hintPanels[activeIndex].SetActive(true);
                     dialogueController.StopDialogue();
+                    if (numberOfNightWindowOpenings == 1) ActionManager.Instance.HighVolume();
                 }
             }
         }
     }
-
+    bool dialoguePlayed = false;
     private void ActivateInteraction()
     {
         if (!learningCompleted)
@@ -220,9 +227,9 @@ public class InteractionManager : MonoBehaviour
 
         playerController.SetMovement(false);
         inProcess = true;
-        if (cameraAndTriggerIndex == 1 && !recipeChecked)
+        if (cameraAndTriggerIndex == 1 && !recipeChecked && !ActionManager.Instance.isNight) // если день, камера возле стола и рецепт не проверен
         {
-            dialogueController.PlayPartOfPlot($"recipe_hint_{recipeDialogueIndex + 2}");
+            dialogueController.PlayPartOfPlot($"recipe_hint_{recipeDialogueIndex + 2}"); // реплика проверки рецепта
             dialogueController.BlockSkippingForOneKnot();
 
             if (recipeDialogueIndex > 1) recipeDialogueIndex = 0;
@@ -235,24 +242,27 @@ public class InteractionManager : MonoBehaviour
             {
                 StopCoroutine(windowDialogueCoroutine);
             }
+            if (ActionManager.Instance.isNight)
+            {
+                Transform canvasTransform = cameraBehaviour.GetCurrentCamera().transform.Find("Canvas");
+                if (canvasTransform != null)
+                {
+                    canvasTransform.gameObject.SetActive(false);
+                }
+            }
             windowDialogueCoroutine = StartCoroutine(HandleWindowInteraction());
         }
         if (cameraAndTriggerIndex == 3)
         {
-            StartCoroutine(BrotherPotionCoroutine());
+            if (!potionFinished && !dialoguePlayed && !ActionManager.Instance.brotherStoled)
+            {
+                dialogueController.PlayPartOfPlotWithDelay("boy_thoughts", 2f);
+                dialoguePlayed = true;
+            }
+            if (potionFinished && !ActionManager.Instance.brotherStoled) StartCoroutine(ActionManager.Instance.BrotherPotionCoroutine());
         } 
     }
-    private IEnumerator BrotherPotionCoroutine()
-    {
-        dialogueController.PlayPartOfPlot("brother_potion");
-        while (dialogueController.IsDialoguePlaying)
-        {
-            yield return null;
-        }
-        yield return new WaitForSeconds(1f);
-        ActionManager.Instance.StartCutScene();
-        yield return null;
-    }
+
     private IEnumerator StartExitCoroutine(string text)
     {
         dialogueController.HideAllPanels();
@@ -273,71 +283,81 @@ public class InteractionManager : MonoBehaviour
             showingLearningPanel = false;
         }
     }
+    private int numberOfNightWindowOpenings = 0;
     private IEnumerator HandleWindowInteraction()
     {
-        if (windowDialogueIndex == 0)
+        if (!ActionManager.Instance.brotherStoled)
         {
-            recipeChecked = true;
-            windowDialogueIndex = 1;
-            yield break;
-        }
-
-        string dialogueKey = $"window_dialogue_{windowDialogueIndex}";
-        Debug.Log("«апускаю диалог " + windowDialogueIndex);
-
-        if (dialogueKey == null)
-        {
-            windowDialogueCoroutine = null;
-            yield break;
-        }
-
-        float delay = 4f;
-        dialogueController.PlayPartOfPlotWithDelay(dialogueKey, delay);
-
-        yield return new WaitForSeconds(delay);
-
-        bool started = false;
-        yield return new WaitUntil(() =>
-        {
-            if (dialogueController.IsDialoguePlaying)
+            if (windowDialogueIndex == 0)
             {
-                started = true;
-                return true;
+                recipeChecked = true;
+                InkQuestManager.Instance.NextAdditionalTask();
+                windowDialogueIndex = 1;
+                yield break;
             }
-            return !inProcess; // если игрок вышел до начала
-        });
 
-        if (!started)
-        {
+            string dialogueKey = $"window_dialogue_{windowDialogueIndex}";
+            Debug.Log("«апускаю диалог " + windowDialogueIndex);
+
+            if (dialogueKey == null)
+            {
+                windowDialogueCoroutine = null;
+                yield break;
+            }
+
+            float delay = 4f;
+            dialogueController.PlayPartOfPlotWithDelay(dialogueKey, delay);
+
+            yield return new WaitForSeconds(delay);
+
+            bool started = false;
+            yield return new WaitUntil(() =>
+            {
+                if (dialogueController.IsDialoguePlaying)
+                {
+                    started = true;
+                    return true;
+                }
+                return !inProcess; // если игрок вышел до начала
+            });
+
+            if (!started)
+            {
+                windowDialogueCoroutine = null;
+                yield break;
+            }
+
+            // Ѕлокируем пропуск, ждЄм завершени€ диалога
+            dialogueController.BlockSkippingForOneKnot();
+            yield return new WaitUntil(() => !dialogueController.IsDialoguePlaying || !inProcess);
+
+            // ѕровер€ем, чем закончилось
+            if (dialogueController.IsDialoguePlaying == false && inProcess)
+            {
+                // диалог дослушан до конца
+                fullyHeardDialogues++;
+            }
+            else
+            {
+                // прерван Ч индекс не растЄт, не засчитываем
+                Debug.Log("ƒиалог прерван, не засчитан");
+            }
+            // диалог закончилс€ -> увеличиваем индекс
+            windowDialogueIndex++;
+
+            // ѕроверка на достижение
+            if (fullyHeardDialogues >= totalDialogues)
+            {
+                AchievementDataManager.Instance.Unlock("did_you_hear");
+            }
+
             windowDialogueCoroutine = null;
-            yield break;
-        }
-
-        // Ѕлокируем пропуск, ждЄм завершени€ диалога
-        dialogueController.BlockSkippingForOneKnot();
-        yield return new WaitUntil(() => !dialogueController.IsDialoguePlaying || !inProcess);
-
-        // ѕровер€ем, чем закончилось
-        if (dialogueController.IsDialoguePlaying == false && inProcess)
-        {
-            // диалог дослушан до конца
-            fullyHeardDialogues++;
         }
         else
         {
-            // прерван Ч индекс не растЄт, не засчитываем
-            Debug.Log("ƒиалог прерван, не засчитан");
+            numberOfNightWindowOpenings++;
+            ActionManager.Instance.HandleNightWindow(numberOfNightWindowOpenings);
         }
-        // диалог закончилс€ -> увеличиваем индекс
-        windowDialogueIndex++;
-
-        // ѕроверка на достижение
-        if (fullyHeardDialogues >= totalDialogues)
-        {
-            AchievementDataManager.Instance.Unlock("did_you_hear");
-        }
-
-        windowDialogueCoroutine = null;
     }
 
 
@@ -370,14 +390,15 @@ public class InteractionManager : MonoBehaviour
     {
         TriggerController.OnPlayerEnterTrigger += HandleTriggerEnter;
         TriggerController.OnPlayerExitTrigger += HandleTriggerExit;
+        MiniGameLogicManager.CanStartPotionScene += HandlePotion;
     }
 
     void OnDisable()
     {
         TriggerController.OnPlayerEnterTrigger -= HandleTriggerEnter;
         TriggerController.OnPlayerExitTrigger -= HandleTriggerExit;
+        MiniGameLogicManager.CanStartPotionScene -= HandlePotion;
     }
-
     private void HandleTriggerEnter(TriggerController trigger)
     {
         SetActiveTrigger(trigger.index);
