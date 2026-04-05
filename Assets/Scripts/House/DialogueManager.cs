@@ -197,6 +197,10 @@ public class DialogueManager : MonoBehaviour
                                 }
                             }
                         }
+                        else if (tag == "unlock_friend_of_oven")
+                        {
+                            AchievementDataManager.Instance.Unlock("friend_of_oven");
+                        }
                     }
                 }
 
@@ -230,6 +234,11 @@ public class DialogueManager : MonoBehaviour
     {
         List<Choice> choices = story.currentChoices;
         CanResetButtonsState?.Invoke();
+
+        // ¬ключаем родител€, чтобы кнопки были видимы
+        if (!choiceButtonsParent.activeSelf)
+            choiceButtonsParent.SetActive(true);
+
         for (int i = 0; i < choiceButtons.Length; i++)
         {
             if (i < choices.Count)
@@ -258,6 +267,7 @@ public class DialogueManager : MonoBehaviour
             else
             {
                 choiceButtons[i].gameObject.SetActive(false);
+                choiceButtons[i].onClick.RemoveAllListeners();
             }
         }
     }

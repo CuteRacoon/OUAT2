@@ -86,7 +86,7 @@ public class ActionManager : MonoBehaviour
     }
     private IEnumerator FadeOutBackgroundImage()
     {
-        float duration = 1f;
+        float duration = 3f;
         float elapsed = 0f;
         Image backgroundImage = prehistoryCanvas.GetComponentInChildren<Image>();
         Color originalColor = backgroundImage.color;
@@ -102,6 +102,7 @@ public class ActionManager : MonoBehaviour
     private IEnumerator startDialogueNearBake()
     {
         yield return StartCoroutine(FadeOutBackgroundImage());
+        yield return new WaitForSeconds(1f);
         interactionController.SetCanInteractOfTriggerByIndex(2, false);
 
         gameCanvas.SetActive(true);

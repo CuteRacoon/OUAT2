@@ -5,6 +5,7 @@ public class LampController : MonoBehaviour
 {
     [SerializeField] private BarScript barScript;
     [SerializeField] private Material lampMaterial;
+    [SerializeField] private Material mushroomMaterial;
     private Coroutine emissionCoroutine;
     private Color targetEmissionColor = new Color(25f / 255f, 0f, 2f / 255f);
 
@@ -158,30 +159,57 @@ public class LampController : MonoBehaviour
         SetLampState(true); // включить лампу
     }
     private IEnumerator FadeOutParticles(ParticleSystem ps, float duration)
+{
+    // --- Particles init ---
+    var emission = ps.emission;
+    float startRate = emission.rateOverTime.constant;
+
+    // --- Mushroom material init ---
+    Color startEmission = Color.black;
+    if (mushroomMaterial != null)
     {
-        var emission = ps.emission;
-        float startRate = emission.rateOverTime.constant;
-        float timer = 0f;
+        mushroomMaterial.EnableKeyword("_EMISSION");
+        startEmission = mushroomMaterial.GetColor("_EmissionColor");
+    }
 
-        while (timer < duration)
+    float timer = 0f;
+
+    while (timer < duration)
+    {
+        float t = timer / duration;
+
+        // === Fade particle system ===
+        float newRate = Mathf.Lerp(startRate, 0f, t);
+        var rateOverTime = emission.rateOverTime;
+        rateOverTime.constant = newRate;
+        emission.rateOverTime = rateOverTime;
+
+        // === Fade mushroom material emission ===
+        if (mushroomMaterial != null)
         {
-            float t = timer / duration;
-            float newRate = Mathf.Lerp(startRate, 0f, t);
-
-            var rateOverTime = emission.rateOverTime;
-            rateOverTime.constant = newRate;
-            emission.rateOverTime = rateOverTime;
-
-            timer += Time.deltaTime;
-            yield return null;
+            Color newEmission = Color.Lerp(startEmission, Color.black, t);
+            mushroomMaterial.SetColor("_EmissionColor", newEmission);
         }
 
-        // Отключить систему полностью
-        var finalRate = emission.rateOverTime;
-        finalRate.constant = 0f;
-        emission.rateOverTime = finalRate;
-        ps.Stop();
+        timer += Time.deltaTime;
+        yield return null;
     }
+
+    // === Force final state ===
+
+    // Particles off
+    var finalRate = emission.rateOverTime;
+    finalRate.constant = 0f;
+    emission.rateOverTime = finalRate;
+    ps.Stop();
+
+    // Emission off
+    if (mushroomMaterial != null)
+    {
+        mushroomMaterial.SetColor("_EmissionColor", Color.black);
+    }
+}
+
 
     public void DisableLampBar()
     {
